@@ -20,6 +20,8 @@ class LinkedList:
     # Fills linked list with debt object
     # Sorts objects into the list based on interest rate
     # Keeps running tally of minimums
+    # TODO: Break into pieces
+    # TODO: Unittest the pieces
     def fill_list(self, some_debt):
         self.minimums += some_debt.minimum
         node = Node(some_debt)
@@ -52,6 +54,7 @@ class LinkedList:
                     self.head.next = temp
 
     # Currently used to visually ensure list has been sorted correctly.
+    # TODO: Unittest with setup/teardown...?
     def print_list(self):
         temp = self.head
         while temp:
@@ -59,6 +62,7 @@ class LinkedList:
             temp = temp.next
 
     # Recursive function to handle spillover from paid off debts.
+    # TODO: Unittest with setup/teardown...?
     def spill(self):
         if self.head.data.principal <= 0:
             spillover = 0 - self.head.data.principal
@@ -69,6 +73,7 @@ class LinkedList:
 
     # Slightly altered recursive function that handles nodes that are not currently the "head" node.
     # TODO: Seriously consider reworking these functions into a single function.....or renaming...or something.
+    # TODO: Unittest with setup/teardown...?
     def spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
             spillover = 0 - cur.data.principal
@@ -82,6 +87,8 @@ class LinkedList:
     # Keeps tracks of number of passes(months)
     # Leverages the spill() functions to handle spillover of paid debts.
     # Returns number of months till all debts are paid based on available information.
+    # TODO: Break to pieces
+    # TODO: Unittest
     def pay_shit(self):
         while self.head:
             cur = self.head
@@ -89,17 +96,32 @@ class LinkedList:
             self.temp_leftover += self.leftover
             while cur:
                 if cur == self.head:
+                    interest_incurred = cur.data.principal * cur.data.interest
+                    cur.data.principal += interest_incurred
+                    print(cur.data.name, round(cur.data.principal, 2))
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
                     self.temp_leftover = 0
                     if cur.data.principal <= 0:
                         self.leftover += cur.data.minimum
                         self.spill()
+                        print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
+                    # else:
+                    #     interest_incurred = cur.data.principal * cur.data.interest
+                    #     cur.data.principal += interest_incurred
+                    #     print(cur.data.name, round(cur.data.principal, 2))
                 else:
+                    interest_incurred = cur.data.principal * cur.data.interest
+                    cur.data.principal += interest_incurred
+                    print(cur.data.name, round(cur.data.principal, 2))
                     cur.data.principal -= cur.data.minimum
                     if cur.data.principal <= 0:
+                        print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.leftover += cur.data.minimum
                         self.spill_not_head(cur, prev)
-
+                    # else:
+                    #     interest_incurred = cur.data.principal * cur.data.interest
+                    #     cur.data.principal += interest_incurred
+                    #     print(cur.data.name, round(cur.data.principal, 2))
                 prev = cur
                 cur = cur.next
 
@@ -118,6 +140,7 @@ class Debt:
 
 
 # Prototype function for accepting user input and turning it into debt objects.
+# TODO: Unittest
 def create_debt():
     name = input("Name:")
     principal = int(input("Principal:"))
@@ -131,19 +154,20 @@ def create_debt():
 if __name__ == '__main__':
 
     # Test debts
-    d1 = Debt("credit card", 28, 4, 2)
-    d2 = Debt("loan", 17, 3, 2)
-    d3 = Debt("car", 12, 2, 2)
-    d4 = Debt("Something", 22, 1, 2)
+    d1 = Debt("credit card", 40, .04, 10)
+    d2 = Debt("loan", 60, .03, 10)
+    d3 = Debt("car", 20, .02, 10)
+    d4 = Debt("Something", 100, .01, 10)
 
     linked_list = LinkedList()
 
     # TODO: Consider setting income somewhere else, or via user input.
     # TODO: Fix when user input
-    linked_list.income = 11
+    linked_list.income = 50
 
     # TODO: Find a better way to link the list.
     # TODO: Fix when user input
+    # TODO: Unittest
     linked_list.fill_list(d1)
     linked_list.fill_list(d2)
     linked_list.fill_list(d3)
