@@ -94,34 +94,38 @@ class LinkedList:
             cur = self.head
             prev = None
             self.temp_leftover += self.leftover
+            interest_already_paid = []
             while cur:
                 if cur == self.head:
-                    interest_incurred = cur.data.principal * cur.data.interest
-                    cur.data.principal += interest_incurred
-                    print(cur.data.name, round(cur.data.principal, 2))
+                    # interest_incurred = cur.data.principal * cur.data.interest
+                    # cur.data.principal += interest_incurred
+                    # print(cur.data.name, round(cur.data.principal, 2))
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
                     self.temp_leftover = 0
                     if cur.data.principal <= 0:
                         self.leftover += cur.data.minimum
                         self.spill()
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
-                    # else:
-                    #     interest_incurred = cur.data.principal * cur.data.interest
-                    #     cur.data.principal += interest_incurred
-                    #     print(cur.data.name, round(cur.data.principal, 2))
+                    else:
+                        interest_incurred = cur.data.principal * cur.data.interest
+                        cur.data.principal += interest_incurred
+                        print(cur.data.name, round(cur.data.principal, 2))
+                        interest_already_paid.append(cur)
                 else:
-                    interest_incurred = cur.data.principal * cur.data.interest
-                    cur.data.principal += interest_incurred
-                    print(cur.data.name, round(cur.data.principal, 2))
+                    # interest_incurred = cur.data.principal * cur.data.interest
+                    # cur.data.principal += interest_incurred
+                    # print(cur.data.name, round(cur.data.principal, 2))
                     cur.data.principal -= cur.data.minimum
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.leftover += cur.data.minimum
                         self.spill_not_head(cur, prev)
-                    # else:
-                    #     interest_incurred = cur.data.principal * cur.data.interest
-                    #     cur.data.principal += interest_incurred
-                    #     print(cur.data.name, round(cur.data.principal, 2))
+                    else:
+                        interest_incurred = cur.data.principal * cur.data.interest
+                        cur.data.principal += interest_incurred
+                        print(cur.data.name, round(cur.data.principal, 2))
+                        interest_already_paid.append(cur)
+
                 prev = cur
                 cur = cur.next
 
