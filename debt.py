@@ -70,6 +70,8 @@ class LinkedList:
             self.head = self.head.next
             if self.head:
                 self.head.data.principal -= spillover
+                print(self.head.data.name, round(self.head.data.principal, 2))
+
                 self.spill()
 
     def special_spill_not_head(self, cur, prev):
