@@ -71,7 +71,6 @@ class LinkedList:
             if self.head:
                 self.head.data.principal -= spillover
                 print(self.head.data.name, round(self.head.data.principal, 2))
-
                 self.spill()
 
     def special_spill_not_head(self, cur, prev):
@@ -125,11 +124,9 @@ class LinkedList:
             self.interest_already_paid = []
             while cur:
                 if cur == self.head:
-                    # interest_incurred = cur.data.principal * cur.data.interest
-                    # cur.data.principal += interest_incurred
-                    # print(cur.data.name, round(cur.data.principal, 2))
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
                     self.temp_leftover = 0
+
                     if cur.data.principal <= 0:
                         self.leftover += cur.data.minimum
                         self.spill()
@@ -140,10 +137,8 @@ class LinkedList:
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
                 else:
-                    # interest_incurred = cur.data.principal * cur.data.interest
-                    # cur.data.principal += interest_incurred
-                    # print(cur.data.name, round(cur.data.principal, 2))
                     cur.data.principal -= cur.data.minimum
+
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.leftover += cur.data.minimum
