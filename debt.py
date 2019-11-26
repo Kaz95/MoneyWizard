@@ -16,6 +16,7 @@ class LinkedList:
         self.minimums = 0   # Total minimum payment of all debts. Used to calculate if enough money for mins.
         self.leftover = 0   # L = (Income - minimums)
         self.months_to_payoff = 0   # ++ once per full pass of linked list
+        self.interest_already_paid = []
 
     # Fills linked list with debt object
     # Sorts objects into the list based on interest rate
@@ -71,16 +72,41 @@ class LinkedList:
                 self.head.data.principal -= spillover
                 self.spill()
 
-    # Slightly altered recursive function that handles nodes that are not currently the "head" node.
-    # TODO: Seriously consider reworking these functions into a single function.....or renaming...or something.
-    # TODO: Unittest with setup/teardown...?
-    def spill_not_head(self, cur, prev):
+    def special_spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
             spillover = 0 - cur.data.principal
             prev.next = cur.next
             if self.head:
+                self.head.data.principal -= self.head.data.interest_incurred
                 self.head.data.principal -= spillover
-                self.spill()
+                print(self.head.data.name, round(self.head.data.principal, 2))
+
+                if self.head.data.principal <= 0:
+                    self.special_spill()
+                else:
+                    i = self.head.data.principal * self.head.data.interest
+                    self.head.data.principal += i
+                    print(self.head.data.name, round(self.head.data.principal, 2))
+
+    def special_spill(self):
+        if self.head.data.principal <= 0:
+            spillover = 0 - self.head.data.principal
+            self.head = self.head.next
+            if self.head:
+                if self.head in self.interest_already_paid:
+                    self.head.data.principal -= self.head.data.interest_incurred
+                    self.head.data.principal -= spillover
+                    print(self.head.data.name, round(self.head.data.principal, 2))
+
+                    if self.head.data.principal <= 0:
+                        self.special_spill()
+                    else:
+                        i = self.head.data.principal * self.head.data.interest
+                        self.head.data.principal += i
+                        print(self.head.data.name, round(self.head.data.principal, 2))
+                else:
+                    self.head.data.principal -= spillover
+                    self.special_spill()
 
     # Meat and potatoes function.
     # Iterates through linked list paying down principles and removing paid off nodes.
@@ -94,7 +120,7 @@ class LinkedList:
             cur = self.head
             prev = None
             self.temp_leftover += self.leftover
-            interest_already_paid = []
+            self.interest_already_paid = []
             while cur:
                 if cur == self.head:
                     # interest_incurred = cur.data.principal * cur.data.interest
@@ -107,10 +133,10 @@ class LinkedList:
                         self.spill()
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                     else:
-                        interest_incurred = cur.data.principal * cur.data.interest
-                        cur.data.principal += interest_incurred
+                        cur.data.interest_incurred = cur.data.principal * cur.data.interest
+                        cur.data.principal += cur.data.interest_incurred
                         print(cur.data.name, round(cur.data.principal, 2))
-                        interest_already_paid.append(cur)
+                        self.interest_already_paid.append(cur)
                 else:
                     # interest_incurred = cur.data.principal * cur.data.interest
                     # cur.data.principal += interest_incurred
@@ -119,12 +145,12 @@ class LinkedList:
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.leftover += cur.data.minimum
-                        self.spill_not_head(cur, prev)
+                        self.special_spill_not_head(cur, prev)
                     else:
-                        interest_incurred = cur.data.principal * cur.data.interest
-                        cur.data.principal += interest_incurred
+                        cur.data.interest_incurred = cur.data.principal * cur.data.interest
+                        cur.data.principal += cur.data.interest_incurred
                         print(cur.data.name, round(cur.data.principal, 2))
-                        interest_already_paid.append(cur)
+                        self.interest_already_paid.append(cur)
 
                 prev = cur
                 cur = cur.next
@@ -141,6 +167,7 @@ class Debt:
         self.principal = principal
         self.interest = interest
         self.minimum = minimum
+        self.interest_incurred = 0
 
 
 # Prototype function for accepting user input and turning it into debt objects.
