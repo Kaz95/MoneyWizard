@@ -7,6 +7,7 @@ class Node:
 
 
 # Purpose modified linked list class definition
+# TODO: Consider importing linked list and inherit....something....look it up.
 class LinkedList:
 
     def __init__(self):
@@ -23,25 +24,30 @@ class LinkedList:
     # Keeps running tally of minimums
     # TODO: Break into pieces
     # TODO: Unittest the pieces
+    # TODO: Decide what to do if == interest rate. Need uniform behavior for testing.
     def fill_list(self, some_debt):
         self.minimums += some_debt.minimum
         node = Node(some_debt)
         if self.head is None:
             self.head = node
         else:
+            # TODO: DRY
             cur = self.head
             prev = None
 
             while cur is not None:
                 if node.data.interest < cur.data.interest:
+                    # TODO: DRY
                     prev = cur
                     cur = cur.next
                 elif prev is None:
+                    # TODO: DRY
                     temp = self.head
                     self.head = node
                     self.head.next = temp
                     break
                 else:
+                    # TODO: DRY
                     prev.next = node
                     prev.next.next = cur
                     break
@@ -50,6 +56,7 @@ class LinkedList:
                 if node.data.interest < prev.data.interest:
                     prev.next = node
                 else:
+                    # TODO: DRY
                     temp = self.head
                     self.head = node
                     self.head.next = temp
@@ -66,13 +73,16 @@ class LinkedList:
     # TODO: Unittest with setup/teardown...?
     def spill(self):
         if self.head.data.principal <= 0:
+            # TODO: DRY
             spillover = 0 - self.head.data.principal
+
             self.head = self.head.next
             if self.head:
                 self.head.data.principal -= spillover
                 print(self.head.data.name, round(self.head.data.principal, 2))
                 self.spill()
 
+    # TODO: DRY
     def special_spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
             spillover = 0 - cur.data.principal
@@ -89,6 +99,7 @@ class LinkedList:
                     self.head.data.principal += i
                     print(self.head.data.name, round(self.head.data.principal, 2))
 
+    # TODO: DRY
     def special_spill(self):
         if self.head.data.principal <= 0:
             spillover = 0 - self.head.data.principal
@@ -118,6 +129,7 @@ class LinkedList:
     # TODO: Unittest
     def pay_shit(self):
         while self.head:
+            # TODO: DRY
             cur = self.head
             prev = None
             self.temp_leftover += self.leftover
@@ -126,29 +138,31 @@ class LinkedList:
                 if cur == self.head:
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
                     self.temp_leftover = 0
-
+                    # TODO: DRY
                     if cur.data.principal <= 0:
                         self.leftover += cur.data.minimum
                         self.spill()
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                     else:
+                        # TODO: DRY
                         cur.data.interest_incurred = cur.data.principal * cur.data.interest
                         cur.data.principal += cur.data.interest_incurred
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
                 else:
                     cur.data.principal -= cur.data.minimum
-
+                    # TODO: DRY
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.leftover += cur.data.minimum
                         self.special_spill_not_head(cur, prev)
                     else:
+                        # TODO: DRY
                         cur.data.interest_incurred = cur.data.principal * cur.data.interest
                         cur.data.principal += cur.data.interest_incurred
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
-
+                # TODO: DRY
                 prev = cur
                 cur = cur.next
 
@@ -157,6 +171,7 @@ class LinkedList:
         return self.months_to_payoff
 
 
+# TODO: Move this somewhere else....
 class Debt:
 
     def __init__(self, name, principal, interest, minimum):
