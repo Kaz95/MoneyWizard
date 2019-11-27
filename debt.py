@@ -1,3 +1,24 @@
+def move_cursors(cur):
+    prev = cur
+    cur = cur.next
+    return cur, prev
+
+
+def insert(node, cur, prev):
+    prev.next = node
+    prev.next.next = cur
+
+
+def find_spillover(principal):
+    spillover = 0 - principal
+    return spillover
+
+
+def incur_interest(cur):
+    cur.data.interest_incurred = cur.data.principal * cur.data.interest
+    cur.data.principal += cur.data.interest_incurred
+
+
 # TODO: Variable names still mostly shit. Same with function names. Take another look when user input.
 class Node:
 
@@ -19,6 +40,29 @@ class LinkedList:
         self.months_to_payoff = 0   # ++ once per full pass of linked list
         self.interest_already_paid = []
 
+    def prime_cursors(self):
+        cur = self.head
+        prev = None
+        return cur, prev
+
+    def insert_new_head(self, node):
+        temp = self.head
+        self.head = node
+        self.head.next = temp
+
+    def prepare_recalc(self, spillover):
+        self.head.data.principal -= self.head.data.interest_incurred
+        self.head.data.principal -= spillover
+        print(self.head.data.name, round(self.head.data.principal, 2))
+
+    def recalc_interest(self):
+        i = self.head.data.principal * self.head.data.interest
+        self.head.data.principal += i
+        print(self.head.data.name, round(self.head.data.principal, 2))
+
+    def add_to_leftover(self, cur):
+        self.leftover += cur.data.minimum
+
     # Fills linked list with debt object
     # Sorts objects into the list based on interest rate
     # Keeps running tally of minimums
@@ -31,35 +75,22 @@ class LinkedList:
         if self.head is None:
             self.head = node
         else:
-            # TODO: DRY
-            cur = self.head
-            prev = None
-
+            cur, prev = self.prime_cursors()
             while cur is not None:
                 if node.data.interest < cur.data.interest:
-                    # TODO: DRY
-                    prev = cur
-                    cur = cur.next
+                    cur, prev = move_cursors(cur)
                 elif prev is None:
-                    # TODO: DRY
-                    temp = self.head
-                    self.head = node
-                    self.head.next = temp
+                    self.insert_new_head(node)
                     break
                 else:
-                    # TODO: DRY
-                    prev.next = node
-                    prev.next.next = cur
+                    insert(node, cur, prev)
                     break
 
             if cur is None:
                 if node.data.interest < prev.data.interest:
                     prev.next = node
                 else:
-                    # TODO: DRY
-                    temp = self.head
-                    self.head = node
-                    self.head.next = temp
+                    self.insert_new_head(node)
 
     # Currently used to visually ensure list has been sorted correctly.
     # TODO: Unittest with setup/teardown...?
@@ -73,9 +104,7 @@ class LinkedList:
     # TODO: Unittest with setup/teardown...?
     def spill(self):
         if self.head.data.principal <= 0:
-            # TODO: DRY
-            spillover = 0 - self.head.data.principal
-
+            spillover = find_spillover(self.head.data.principal)
             self.head = self.head.next
             if self.head:
                 self.head.data.principal -= spillover
@@ -85,39 +114,33 @@ class LinkedList:
     # TODO: DRY
     def special_spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
-            spillover = 0 - cur.data.principal
+            spillover = find_spillover(cur.data.principal)
             prev.next = cur.next
             if self.head:
-                self.head.data.principal -= self.head.data.interest_incurred
-                self.head.data.principal -= spillover
-                print(self.head.data.name, round(self.head.data.principal, 2))
+                self.prepare_recalc(spillover)
 
                 if self.head.data.principal <= 0:
                     self.special_spill()
                 else:
-                    i = self.head.data.principal * self.head.data.interest
-                    self.head.data.principal += i
-                    print(self.head.data.name, round(self.head.data.principal, 2))
+                    self.recalc_interest()
+
 
     # TODO: DRY
     def special_spill(self):
         if self.head.data.principal <= 0:
-            spillover = 0 - self.head.data.principal
+            spillover = find_spillover(self.head.data.principal)
             self.head = self.head.next
             if self.head:
                 if self.head in self.interest_already_paid:
-                    self.head.data.principal -= self.head.data.interest_incurred
-                    self.head.data.principal -= spillover
-                    print(self.head.data.name, round(self.head.data.principal, 2))
+                    self.prepare_recalc(spillover)
 
                     if self.head.data.principal <= 0:
                         self.special_spill()
                     else:
-                        i = self.head.data.principal * self.head.data.interest
-                        self.head.data.principal += i
-                        print(self.head.data.name, round(self.head.data.principal, 2))
+                        self.recalc_interest()
                 else:
                     self.head.data.principal -= spillover
+                    # TODO: Might be able to do a normal spill here
                     self.special_spill()
 
     # Meat and potatoes function.
@@ -129,9 +152,7 @@ class LinkedList:
     # TODO: Unittest
     def pay_shit(self):
         while self.head:
-            # TODO: DRY
-            cur = self.head
-            prev = None
+            cur, prev = self.prime_cursors()
             self.temp_leftover += self.leftover
             self.interest_already_paid = []
             while cur:
@@ -140,13 +161,11 @@ class LinkedList:
                     self.temp_leftover = 0
                     # TODO: DRY
                     if cur.data.principal <= 0:
-                        self.leftover += cur.data.minimum
+                        self.add_to_leftover(cur)
                         self.spill()
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                     else:
-                        # TODO: DRY
-                        cur.data.interest_incurred = cur.data.principal * cur.data.interest
-                        cur.data.principal += cur.data.interest_incurred
+                        incur_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
                 else:
@@ -154,17 +173,14 @@ class LinkedList:
                     # TODO: DRY
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
-                        self.leftover += cur.data.minimum
+                        self.add_to_leftover(cur)
                         self.special_spill_not_head(cur, prev)
                     else:
-                        # TODO: DRY
-                        cur.data.interest_incurred = cur.data.principal * cur.data.interest
-                        cur.data.principal += cur.data.interest_incurred
+                        incur_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
-                # TODO: DRY
-                prev = cur
-                cur = cur.next
+
+                cur, prev = move_cursors(cur)
 
             self.months_to_payoff += 1
 
