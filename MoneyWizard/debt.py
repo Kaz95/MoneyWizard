@@ -1,3 +1,6 @@
+# Static functions
+
+
 def move_cursors(cur):
     prev = cur
     cur = cur.next
@@ -14,12 +17,8 @@ def find_spillover(principal):
     return spillover
 
 
-def incur_interest(cur):
-    cur.data.interest_incurred = cur.data.principal * cur.data.interest
-    cur.data.principal += cur.data.interest_incurred
-
-
 # TODO: Variable names still mostly shit. Same with function names. Take another look when user input.
+# TODO: Import this
 class Node:
 
     def __init__(self, data):
@@ -55,10 +54,14 @@ class LinkedList:
         self.head.data.principal -= spillover
         print(self.head.data.name, round(self.head.data.principal, 2))
 
-    def recalc_interest(self):
-        i = self.head.data.principal * self.head.data.interest
-        self.head.data.principal += i
-        print(self.head.data.name, round(self.head.data.principal, 2))
+    def generate_interest(self, cur=None):
+        if cur:
+            cur.data.interest_incurred = cur.data.principal * cur.data.interest
+            cur.data.principal += cur.data.interest_incurred
+        else:
+            self.head.data.interest_incurred = self.head.data.principal * self.head.data.interest
+            self.head.data.principal += self.head.data.interest_incurred
+            print(self.head.data.name, round(self.head.data.principal, 2))
 
     def add_to_leftover(self, cur):
         self.leftover += cur.data.minimum
@@ -66,8 +69,6 @@ class LinkedList:
     # Fills linked list with debt object
     # Sorts objects into the list based on interest rate
     # Keeps running tally of minimums
-    # TODO: Break into pieces
-    # TODO: Unittest the pieces
     # TODO: Decide what to do if == interest rate. Need uniform behavior for testing.
     def fill_list(self, some_debt):
         self.minimums += some_debt.minimum
@@ -111,7 +112,7 @@ class LinkedList:
                 print(self.head.data.name, round(self.head.data.principal, 2))
                 self.spill()
 
-    # TODO: DRY
+    # TODO: Unittest
     def special_spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
             spillover = find_spillover(cur.data.principal)
@@ -122,10 +123,9 @@ class LinkedList:
                 if self.head.data.principal <= 0:
                     self.special_spill()
                 else:
-                    self.recalc_interest()
+                    self.generate_interest()
 
-
-    # TODO: DRY
+    # TODO: Unittest
     def special_spill(self):
         if self.head.data.principal <= 0:
             spillover = find_spillover(self.head.data.principal)
@@ -137,7 +137,7 @@ class LinkedList:
                     if self.head.data.principal <= 0:
                         self.special_spill()
                     else:
-                        self.recalc_interest()
+                        self.generate_interest()
                 else:
                     self.head.data.principal -= spillover
                     # TODO: Might be able to do a normal spill here
@@ -148,8 +148,6 @@ class LinkedList:
     # Keeps tracks of number of passes(months)
     # Leverages the spill() functions to handle spillover of paid debts.
     # Returns number of months till all debts are paid based on available information.
-    # TODO: Break to pieces
-    # TODO: Unittest
     def pay_shit(self):
         while self.head:
             cur, prev = self.prime_cursors()
@@ -159,24 +157,22 @@ class LinkedList:
                 if cur == self.head:
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
                     self.temp_leftover = 0
-                    # TODO: DRY
                     if cur.data.principal <= 0:
                         self.add_to_leftover(cur)
                         self.spill()
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                     else:
-                        incur_interest(cur)
+                        self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
                 else:
                     cur.data.principal -= cur.data.minimum
-                    # TODO: DRY
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.add_to_leftover(cur)
                         self.special_spill_not_head(cur, prev)
                     else:
-                        incur_interest(cur)
+                        self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid.append(cur)
 
