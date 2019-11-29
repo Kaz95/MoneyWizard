@@ -34,7 +34,14 @@ def separate_bills(bills_list, middle_range):
     return pp1, pp2
 
 
-if __name__ == '__main__':
+def get_pay_day():
+    amount = input("Amount: ")
+    date = input("Date: ")
+    payday = PayDay(amount, date)
+    return payday
+
+
+def run():
     # Creating paydays
     # TODO: Fix when user input
     p1 = PayDay(1000, 5)
@@ -85,3 +92,9 @@ if __name__ == '__main__':
 
         else:
             print(f"Save {pp2sum - p2.amount} from pp1")
+
+    return left_over
+
+
+if __name__ == '__main__':
+    run()

@@ -1,6 +1,6 @@
+
+
 # Static functions
-
-
 def move_cursors(cur):
     prev = cur
     cur = cur.next
@@ -102,7 +102,6 @@ class LinkedList:
             temp = temp.next
 
     # Recursive function to handle spillover from paid off debts.
-    # TODO: Unittest with setup/teardown...?
     def spill(self):
         if self.head.data.principal <= 0:
             spillover = find_spillover(self.head.data.principal)
@@ -206,8 +205,7 @@ def create_debt():
     return dboi
 
 
-if __name__ == '__main__':
-
+def run(income=None):
     # Test debts
     d1 = Debt("credit card", 40, .04, 10)
     d2 = Debt("loan", 60, .03, 10)
@@ -218,7 +216,10 @@ if __name__ == '__main__':
 
     # TODO: Consider setting income somewhere else, or via user input.
     # TODO: Fix when user input
-    linked_list.income = 50
+    if income:
+        linked_list.income = income
+    else:
+        linked_list.income = 50
 
     # TODO: Find a better way to link the list.
     # TODO: Fix when user input
@@ -242,3 +243,7 @@ if __name__ == '__main__':
 
     # Expecting pay_shit() to return an int value.
     print(f"{linked_list.pay_shit()} month(s) till payoff")
+
+
+if __name__ == '__main__':
+    run()

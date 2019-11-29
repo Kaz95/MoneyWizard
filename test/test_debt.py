@@ -73,6 +73,21 @@ class TestDebt(unittest.TestCase):
         self.linked_list.add_to_leftover(cur)
         self.assertEqual(self.linked_list.leftover, 10)
 
+    def test_spill(self):
+        self.linked_list.head.data.principal = -10
+        self.linked_list.spill()
+
+        self.assertEqual(self.linked_list.head.data.name, "loan")
+        self.assertEqual(self.linked_list.head.data.principal, 50, "single spill case failed")
+
+    def test_multiple_spill(self):
+        self.linked_list.head.data.principal = -100
+        self.linked_list.spill()
+
+        self.assertEqual(self.linked_list.head.data.name, "Something")
+        self.assertEqual(self.linked_list.head.data.principal, 80)
+
+
 
 if __name__ == '__main__':
     unittest.main()
