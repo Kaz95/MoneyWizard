@@ -1,5 +1,5 @@
 import unittest
-from MoneyWizard import debt
+import debt
 
 
 # class MyTestCase(unittest.TestCase):

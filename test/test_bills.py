@@ -1,5 +1,5 @@
 import unittest
-from MoneyWizard import bills
+import bills
 
 
 # class MyTestCase(unittest.TestCase):
