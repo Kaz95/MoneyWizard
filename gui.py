@@ -9,6 +9,7 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 class MenuWindow(QtWidgets.QMainWindow):
     payday_window_signal = QtCore.pyqtSignal()
     income_window_signal = QtCore.pyqtSignal()
+    both_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
@@ -19,11 +20,17 @@ class MenuWindow(QtWidgets.QMainWindow):
         self.debt_btn = self.findChild(QtWidgets.QPushButton, "debt_btn")
         self.debt_btn.clicked.connect(self.switch_income_window)
 
+        self.both_btn = self.findChild(QtWidgets.QPushButton, "both_btn")
+        self.both_btn.clicked.connect(self.emit_both_signal)
+
     def switch_payday_window(self):
         self.payday_window_signal.emit()
 
     def switch_income_window(self):
         self.income_window_signal.emit()
+
+    def emit_both_signal(self):
+        self.both_signal.emit()
 
 
 # TODO: Re-write with signals emitting object variables.
@@ -63,13 +70,17 @@ class PayDayWindow(QtWidgets.QDialog):
 
 # TODO: Re-write as slots for object signals
 class BillsWindow(QtWidgets.QDialog):
+
+    debt_window_signal = QtCore.pyqtSignal(str)
+
     pay_day_list = []
     bills_list = []
 
-    def __init__(self, p1, p2):
+    def __init__(self, p1, p2, run_both=False):
         QtWidgets.QWidget.__init__(self)
         self.p1 = p1
         self.p2 = p2
+        self.run_both = run_both
 
         BillsWindow.pay_day_list.append(p1)
         BillsWindow.pay_day_list.append(p2)
@@ -97,9 +108,18 @@ class BillsWindow(QtWidgets.QDialog):
         self.amt_line_edit.clear()
         self.date_line_edit.clear()
 
+    def switch_debt_window(self):
+        left_over = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+        left_over = str(left_over)
+        self.debt_window_signal.emit(left_over)
+
     def run_bills(self):
-        bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
-        self.close()
+        if self.run_both is False:
+            bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+            self.close()
+        else:
+            print("It wasn't false")
+            self.switch_debt_window()
 
 
 class IncomeWindow(QtWidgets.QDialog):
@@ -157,10 +177,21 @@ class DebtWindow(QtWidgets.QDialog):
 
 class Controller:
     def __init__(self):
-        pass
+        self.run_both = False
+        self.menu = None
+        self.payday = None
+        self.bills = None
+        self.income = None
+        self.debt = None
+
+    def change_run_both(self):
+        self.run_both = True
+        print(self.run_both)
 
     def show_menu(self):
         self.menu = MenuWindow()
+        self.menu.both_signal.connect(self.change_run_both)
+        self.menu.both_signal.connect(self.show_payday)
         self.menu.payday_window_signal.connect(self.show_payday)
         self.menu.income_window_signal.connect(self.show_income)
         self.menu.show()
@@ -172,8 +203,9 @@ class Controller:
         self.payday.show()
 
     def show_bills(self, p1, p2):
-        self.bills = BillsWindow(p1, p2)
+        self.bills = BillsWindow(p1, p2, self.run_both)
         self.payday.close()
+        self.bills.debt_window_signal.connect(self.show_debt)
         self.bills.show()
 
     def show_income(self):
@@ -184,7 +216,10 @@ class Controller:
 
     def show_debt(self, income):
         self.debt = DebtWindow(income)
-        self.income.close()
+        if self.income is not None:
+            self.income.close()
+        else:
+            self.bills.close()
         self.debt.show()
 
 
