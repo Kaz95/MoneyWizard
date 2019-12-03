@@ -181,6 +181,15 @@ class LinkedList:
 
         return self.months_to_payoff
 
+    def prepare_pay_shit(self):
+        if self.income > self.minimums:
+            self.leftover = this_many = self.income - self.minimums
+            print(f"You have {this_many} extra!")
+        elif self.income == self.minimums:
+            print("Just pay your minimums in order!")
+        else:
+            print("With ya broke ass.")
+
 
 # TODO: Move this somewhere else....
 class Debt:

@@ -1,5 +1,5 @@
 import sys
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.uic import loadUi
 import bills
 import debt
@@ -127,18 +127,18 @@ class DebtWindow(QtWidgets.QDialog):
         loadUi("debt.ui", self)
         print(f"Income: {income}")
         self.linked_list = debt.LinkedList()
-        self.linked_list.income = income
+        self.linked_list.income = int(income)
 
         self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_debt)
 
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
-        self.done_btn.clicked.connect(self.linked_list.print_list)
+        self.done_btn.clicked.connect(self.run)
 
     def add_debt(self):
         name = self.name_line_edit.text()
         principal = int(self.principal_line_edit.text())
-        interest = int(self.interest_line_edit.text())
+        interest = float(self.interest_line_edit.text())
         minimum = int(self.minimum_line_edit.text())
 
         some_debt = debt.Debt(name, principal, interest, minimum)
@@ -148,6 +148,11 @@ class DebtWindow(QtWidgets.QDialog):
         self.principal_line_edit.clear()
         self.interest_line_edit.clear()
         self.minimum_line_edit.clear()
+
+    def run(self):
+        self.linked_list.prepare_pay_shit()
+        print(f"{self.linked_list.pay_shit()} month(s) till payoff")
+        self.close()
 
 
 class Controller:
