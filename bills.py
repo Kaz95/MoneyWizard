@@ -13,10 +13,6 @@ class Bill:
         self.date = date
 
 
-pay_days_list = []
-bills_list = []
-
-
 def add_amounts(some_list):
     total = 0
 
@@ -103,25 +99,7 @@ def test_run():
     return left_over
 
 
-p1 = None
-p2 = None
-
-
 def run(plist, blist, p1, p2):
-    # Creating paydays
-    # TODO: Fix when user input
-    # p1 = PayDay(1000, 5)
-    # p2 = PayDay(500, 25)
-
-    # TODO: Fix when user input
-    # Creating Bills
-    # b1 = Bill("Insurance", 200, 2)
-    # b2 = Bill("Car", 500, 12)
-    # b3 = Bill("House", 700, 28)
-
-    # Stuff all paydays and bills into their respective list.
-    # pay_days = [p1, p2]
-    # bills = [b1, b2, b3]
 
     # Find totals
     paydays_sum = add_amounts(plist)

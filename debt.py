@@ -195,12 +195,7 @@ class Debt:
 
 # Prototype function for accepting user input and turning it into debt objects.
 # TODO: Unittest
-def create_debt():
-    name = input("Name:")
-    principal = int(input("Principal:"))
-    interest = int(input("Interest:"))
-    minimum = int(input("Minimum:"))
-
+def create_debt(name, principal, interest, minimum):
     dboi = Debt(name, principal, interest, minimum)
     return dboi
 
@@ -233,6 +228,7 @@ def run(income=None):
     # Logic that decides if there is enough money to cover mins.
     # TODO: You are currently finding & assigning leftover value here.
     # TODO: Fix when user input
+
     if linked_list.income > linked_list.minimums:
         linked_list.leftover = this_many = linked_list.income - linked_list.minimums
         print(f"You have {this_many} extra!")

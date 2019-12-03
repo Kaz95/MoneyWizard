@@ -2,10 +2,11 @@ import sys
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.uic import loadUi
 import bills
+import debt
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 
-class Menu(QtWidgets.QMainWindow):
+class MenuWindow(QtWidgets.QMainWindow):
     payday_window_signal = QtCore.pyqtSignal()
     income_window_signal = QtCore.pyqtSignal()
 
@@ -25,44 +26,54 @@ class Menu(QtWidgets.QMainWindow):
         self.income_window_signal.emit()
 
 
-class PayDay(QtWidgets.QDialog):
-    bills_window_signal = QtCore.pyqtSignal()
+# TODO: Re-write with signals emitting object variables.
+class PayDayWindow(QtWidgets.QDialog):
+    bills_window_signal = QtCore.pyqtSignal(object, object)
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+
         self.date_line_edit = None
         self.amt_line_edit = None
+        self.p1 = None
+        self.p2 = None
         loadUi("payday.ui", self)
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
-        self.done_btn.clicked.connect(self.bills_window_signal)
+        self.done_btn.clicked.connect(self.switch_bills_window)
 
         self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_payday)
 
     def switch_bills_window(self):
-        self.bills_window_signal.emit()
+        self.bills_window_signal.emit(self.p1, self.p2)
 
     def add_payday(self):
         amount = self.amt_line_edit.text()
         date = self.date_line_edit.text()
         payday = bills.get_pay_day(amount, date)
-        if bills.p1 is None:
-            bills.p1 = payday
+        if self.p1 is None:
+            self.p1 = payday
         else:
-            bills.p2 = payday
+            self.p2 = payday
+            self.switch_bills_window()
 
-        # TODO: Emit a signal to change page if both vars are filled.
-        # TODO: Eliminates the user having to press "done" button.
-
-        bills.pay_days_list.append(payday)
         self.amt_line_edit.clear()
         self.date_line_edit.clear()
 
 
-class Bills(QtWidgets.QDialog):
+# TODO: Re-write as slots for object signals
+class BillsWindow(QtWidgets.QDialog):
+    pay_day_list = []
+    bills_list = []
 
-    def __init__(self):
+    def __init__(self, p1, p2):
         QtWidgets.QWidget.__init__(self)
+        self.p1 = p1
+        self.p2 = p2
+
+        BillsWindow.pay_day_list.append(p1)
+        BillsWindow.pay_day_list.append(p2)
+
         self.amt_line_edit = None
         self.date_line_edit = None
         self.name_line_edit = None
@@ -80,35 +91,63 @@ class Bills(QtWidgets.QDialog):
         date = self.date_line_edit.text()
 
         bill = bills.get_bill(name, amount, date)
-        bills.bills_list.append(bill)
+        BillsWindow.bills_list.append(bill)
 
         self.name_line_edit.clear()
         self.amt_line_edit.clear()
         self.date_line_edit.clear()
 
     def run_bills(self):
-        bills.run(bills.pay_days_list, bills.bills_list, bills.p1, bills.p2)
+        bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
         self.close()
 
 
-class Income(QtWidgets.QDialog):
-    debt_window_signal = QtCore.pyqtSignal()
+class IncomeWindow(QtWidgets.QDialog):
+    debt_window_signal = QtCore.pyqtSignal(str)
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        self.amt_line_edit = None
         loadUi("income.ui", self)
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.switch_debt_window)
 
     def switch_debt_window(self):
-        self.debt_window_signal.emit()
+        self.debt_window_signal.emit(self.amt_line_edit.text())
 
 
-class Debt(QtWidgets.QDialog):
+class DebtWindow(QtWidgets.QDialog):
 
-    def __init__(self):
+    def __init__(self, income):
         QtWidgets.QWidget.__init__(self)
+        self.name_line_edit = None
+        self.principal_line_edit = None
+        self.interest_line_edit = None
+        self.minimum_line_edit = None
         loadUi("debt.ui", self)
+        print(f"Income: {income}")
+        self.linked_list = debt.LinkedList()
+        self.linked_list.income = income
+
+        self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
+        self.add_btn.clicked.connect(self.add_debt)
+
+        self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
+        self.done_btn.clicked.connect(self.linked_list.print_list)
+
+    def add_debt(self):
+        name = self.name_line_edit.text()
+        principal = int(self.principal_line_edit.text())
+        interest = int(self.interest_line_edit.text())
+        minimum = int(self.minimum_line_edit.text())
+
+        some_debt = debt.Debt(name, principal, interest, minimum)
+        self.linked_list.fill_list(some_debt)
+
+        self.name_line_edit.clear()
+        self.principal_line_edit.clear()
+        self.interest_line_edit.clear()
+        self.minimum_line_edit.clear()
 
 
 class Controller:
@@ -116,30 +155,30 @@ class Controller:
         pass
 
     def show_menu(self):
-        self.menu = Menu()
+        self.menu = MenuWindow()
         self.menu.payday_window_signal.connect(self.show_payday)
         self.menu.income_window_signal.connect(self.show_income)
         self.menu.show()
 
     def show_payday(self):
-        self.payday = PayDay()
+        self.payday = PayDayWindow()
         self.menu.close()
         self.payday.bills_window_signal.connect(self.show_bills)
         self.payday.show()
 
-    def show_bills(self):
-        self.bills = Bills()
+    def show_bills(self, p1, p2):
+        self.bills = BillsWindow(p1, p2)
         self.payday.close()
         self.bills.show()
 
     def show_income(self):
-        self.income = Income()
+        self.income = IncomeWindow()
         self.menu.close()
         self.income.debt_window_signal.connect(self.show_debt)
         self.income.show()
 
-    def show_debt(self):
-        self.debt = Debt()
+    def show_debt(self, income):
+        self.debt = DebtWindow(income)
         self.income.close()
         self.debt.show()
 
