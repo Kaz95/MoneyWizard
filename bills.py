@@ -111,6 +111,7 @@ def run(plist, blist, p1, p2):
     # Decide if there is enough money overall
     if left_over < 0:
         print("You don't have enough money!")
+        return False
     else:
         print("You have enough money!")
         print(f"You have {left_over} left over")
