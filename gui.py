@@ -160,9 +160,19 @@ class IncomeWindow(QtWidgets.QDialog):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
         self.amt_line_edit = None
+
         loadUi("income.ui", self)
+        is_digit_regex = QtCore.QRegExp("[0-9]+")
+        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
+
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.switch_debt_window)
+
+        self.amt_line_edit.setValidator(is_digit_validator)
+        self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+    def not_numeric_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
 
     def switch_debt_window(self):
         self.debt_window_signal.emit(self.amt_line_edit.text())
