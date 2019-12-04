@@ -264,21 +264,21 @@ class Controller:
 
     def show_payday(self):
         self.payday = PayDayWindow()
-        self.menu.close()
+        # self.menu.close()
         self.payday.bills_window_signal.connect(self.show_bills)
-        self.payday.show()
+        self.payday.exec_()
 
     def show_bills(self, p1, p2):
         self.bills = BillsWindow(p1, p2, self.run_both)
         self.payday.close()
         self.bills.debt_window_signal.connect(self.show_debt)
-        self.bills.show()
+        self.bills.exec_()
 
     def show_income(self):
         self.income = IncomeWindow()
-        self.menu.close()
+        # self.menu.close()
         self.income.debt_window_signal.connect(self.show_debt)
-        self.income.show()
+        self.income.exec_()
 
     def show_debt(self, income):
         self.debt = DebtWindow(income)
@@ -286,7 +286,8 @@ class Controller:
             self.income.close()
         else:
             self.bills.close()
-        self.debt.show()
+
+        self.debt.exec_()
 
 
 def main():
