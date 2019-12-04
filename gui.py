@@ -40,15 +40,15 @@ class PayDayWindow(QtWidgets.QDialog):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
-
-        regex = QtCore.QRegExp("[0-9]+")
-        validator = QtGui.QRegExpValidator(regex)
-
         self.date_line_edit = None
         self.amt_line_edit = None
         self.p1 = None
         self.p2 = None
+
         loadUi("payday.ui", self)
+        regex = QtCore.QRegExp("[0-9]+")
+        validator = QtGui.QRegExpValidator(regex)
+
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.switch_bills_window)
 
@@ -81,7 +81,6 @@ class PayDayWindow(QtWidgets.QDialog):
         self.date_line_edit.clear()
 
 
-# TODO: Re-write as slots for object signals
 class BillsWindow(QtWidgets.QDialog):
 
     debt_window_signal = QtCore.pyqtSignal(str)
@@ -101,6 +100,11 @@ class BillsWindow(QtWidgets.QDialog):
         self.amt_line_edit = None
         self.date_line_edit = None
         self.name_line_edit = None
+
+        is_digit_regex = QtCore.QRegExp("[0-9]+")
+        is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
+        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
+        is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
         loadUi("bills.ui", self)
 
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
@@ -108,6 +112,21 @@ class BillsWindow(QtWidgets.QDialog):
 
         self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_bill)
+
+        self.amt_line_edit.setValidator(is_digit_validator)
+        self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+        self.date_line_edit.setValidator(is_digit_validator)
+        self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+        self.name_line_edit.setValidator(is_alnum_validator)
+        self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
+
+    def not_numeric_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+
+    def not_alnum_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
     def add_bill(self):
         name = self.name_line_edit.text()
