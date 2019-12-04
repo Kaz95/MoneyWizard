@@ -82,7 +82,7 @@ class PayDayWindow(QtWidgets.QDialog):
 
 
 class BillsWindow(QtWidgets.QDialog):
-
+    bills_output_signal = QtCore.pyqtSignal(str)
     debt_window_signal = QtCore.pyqtSignal(str)
 
     pay_day_list = []
@@ -109,6 +109,7 @@ class BillsWindow(QtWidgets.QDialog):
 
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.run_bills)
+        self.done_btn.clicked.connect(self.switch_bills_output_window)
 
         self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_bill)
@@ -145,13 +146,25 @@ class BillsWindow(QtWidgets.QDialog):
         left_over = str(left_over)
         self.debt_window_signal.emit(left_over)
 
+    def switch_bills_output_window(self):
+        self.bills_output_signal.emit(self.some_text)
+
     def run_bills(self):
         if self.run_both is False:
-            bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+            self.some_text = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+            self.some_text = str(self.some_text)
             self.close()
         else:
             print("It wasn't false")
             self.switch_debt_window()
+
+
+class BillsOutputWindow(QtWidgets.QDialog):
+
+    def __init__(self, text):
+        QtWidgets.QWidget.__init__(self)
+        loadUi("bills_output.ui", self)
+        self.plainTextEdit.insertPlainText(text)
 
 
 class IncomeWindow(QtWidgets.QDialog):
@@ -272,7 +285,14 @@ class Controller:
         self.bills = BillsWindow(p1, p2, self.run_both)
         self.payday.close()
         self.bills.debt_window_signal.connect(self.show_debt)
+        self.bills.bills_output_signal.connect(self.show_bills_output)
         self.bills.exec_()
+
+    def show_bills_output(self, text):
+        self.bills_output = BillsOutputWindow(text)
+        self.bills.close()
+        self.bills_output.exec_()
+
 
     def show_income(self):
         self.income = IncomeWindow()
