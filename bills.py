@@ -128,13 +128,12 @@ def run(plist, blist, p1, p2):
         pp2sum = add_amounts(second_pay_period)
 
         # TODO: This logic assumes that p1 is first payday of the month.
+        # TODO: Fix ASAP, starting to get annoying.
         # Logic that determines which pay period has a surplus, or if both do.
         if p1.amount > pp1sum and p2.amount > pp2sum:
             print("I'm rich bitch!")
-
         elif p1.amount < pp1sum:
             print(f"Save {pp1sum - p1.amount} from pp2")
-
         else:
             print(f"Save {pp2sum - p2.amount} from pp1")
 

@@ -1,5 +1,5 @@
 import sys
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.uic import loadUi
 import bills
 import debt
@@ -13,6 +13,7 @@ class MenuWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        # self.bills_btn = None
         loadUi("menu.ui", self)
         self.bills_btn = self.findChild(QtWidgets.QPushButton, "bills_btn")
         self.bills_btn.clicked.connect(self.switch_payday_window)
@@ -40,6 +41,9 @@ class PayDayWindow(QtWidgets.QDialog):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
 
+        regex = QtCore.QRegExp("[0-9]+")
+        validator = QtGui.QRegExpValidator(regex)
+
         self.date_line_edit = None
         self.amt_line_edit = None
         self.p1 = None
@@ -50,6 +54,15 @@ class PayDayWindow(QtWidgets.QDialog):
 
         self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_payday)
+
+        self.amt_line_edit.setValidator(validator)
+        self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+        self.date_line_edit.setValidator(validator)
+        self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+    def not_numeric_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
 
     def switch_bills_window(self):
         self.bills_window_signal.emit(self.p1, self.p2)
