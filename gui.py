@@ -186,8 +186,14 @@ class DebtWindow(QtWidgets.QDialog):
         self.principal_line_edit = None
         self.interest_line_edit = None
         self.minimum_line_edit = None
+
         loadUi("debt.ui", self)
+        is_digit_regex = QtCore.QRegExp("[0-9]+")
+        is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
+        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
+        is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
         print(f"Income: {income}")
+
         self.linked_list = debt.LinkedList()
         self.linked_list.income = int(income)
 
@@ -196,6 +202,24 @@ class DebtWindow(QtWidgets.QDialog):
 
         self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.run)
+
+        self.name_line_edit.setValidator(is_alnum_validator)
+        self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
+
+        self.principal_line_edit.setValidator(is_digit_validator)
+        self.principal_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+        # self.interest_line_edit.setValidator(is_digit_validator)
+        # self.interest_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+        self.minimum_line_edit.setValidator(is_digit_validator)
+        self.minimum_line_edit.inputRejected.connect(self.not_numeric_messagebox)
+
+    def not_numeric_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+
+    def not_alnum_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
     def add_debt(self):
         name = self.name_line_edit.text()
