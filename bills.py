@@ -99,7 +99,20 @@ def test_run():
     return left_over
 
 
+def dict_to_output_string(some_dict):
+    if some_dict:
+        text = "You have enough!\n" \
+               f"You have {some_dict['leftover']} leftover\n" \
+               "Save some amount from some pay period. Fix ASAP"
+    else:
+        text = "You don't have enough!"
+
+    return text
+
+
 def run(plist, blist, p1, p2):
+
+    output_dictionary = {}
 
     # Find totals
     paydays_sum = add_amounts(plist)
@@ -111,8 +124,9 @@ def run(plist, blist, p1, p2):
     # Decide if there is enough money overall
     if left_over < 0:
         print("You don't have enough money!")
-        return False
+        output_dictionary = False
     else:
+        output_dictionary['leftover'] = left_over
         print("You have enough money!")
         print(f"You have {left_over} left over")
 
@@ -138,7 +152,8 @@ def run(plist, blist, p1, p2):
         else:
             print(f"Save {pp2sum - p2.amount} from pp1")
 
-    return left_over
+    output_string = dict_to_output_string(output_dictionary)
+    return output_string
 
 
 if __name__ == '__main__':
