@@ -199,6 +199,7 @@ class IncomeWindow(QtWidgets.QDialog):
 
 
 class DebtWindow(QtWidgets.QDialog):
+    debt_output_signal = QtCore.pyqtSignal(str, str)
 
     def __init__(self, income):
         QtWidgets.QWidget.__init__(self)
@@ -206,6 +207,8 @@ class DebtWindow(QtWidgets.QDialog):
         self.principal_line_edit = None
         self.interest_line_edit = None
         self.minimum_line_edit = None
+        self.text1 = None
+        self.text2 = None
 
         loadUi("debt.ui", self)
         is_digit_regex = QtCore.QRegExp("[0-9]+")
@@ -257,8 +260,23 @@ class DebtWindow(QtWidgets.QDialog):
 
     def run(self):
         self.linked_list.prepare_pay_shit()
+        self.linked_list.preserve_payoff_priority()
+        self.text1 = self.linked_list.construct_debt_output()
         print(f"{self.linked_list.pay_shit()} month(s) till payoff")
-        self.close()
+        self.text2 = self.linked_list.construct_debt_output2()
+        self.switch_debt_output_window()
+
+    def switch_debt_output_window(self):
+        self.debt_output_signal.emit(self.text1, self.text2)
+
+
+class DebtOutputWindow(QtWidgets.QDialog):
+
+    def __init__(self, text1, text2):
+        QtWidgets.QWidget.__init__(self)
+        loadUi("debt_output.ui", self)
+        self.plainTextEdit.insertPlainText(text1 + "\n")
+        self.plainTextEdit.insertPlainText(text2 + "\n")
 
 
 class Controller:
@@ -300,7 +318,6 @@ class Controller:
         self.bills.close()
         self.bills_output.exec_()
 
-
     def show_income(self):
         self.income = IncomeWindow()
         # self.menu.close()
@@ -309,12 +326,18 @@ class Controller:
 
     def show_debt(self, income):
         self.debt = DebtWindow(income)
+        self.debt.debt_output_signal.connect(self.show_debt_output)
         if self.income is not None:
             self.income.close()
         else:
             self.bills.close()
 
         self.debt.exec_()
+
+    def show_debt_output(self, text1, text2):
+        self.debt_output = DebtOutputWindow(text1, text2)
+        self.debt.close()
+        self.debt_output.exec_()
 
 
 def main():

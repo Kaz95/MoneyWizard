@@ -38,6 +38,8 @@ class LinkedList:
         self.leftover = 0   # L = (Income - minimums)
         self.months_to_payoff = 0   # ++ once per full pass of linked list
         self.interest_already_paid = []
+        self.pay_off_priority_list = []
+        self.pay_off_month_dictionary = {}
 
     def prime_cursors(self):
         cur = self.head
@@ -160,6 +162,7 @@ class LinkedList:
                         self.add_to_leftover(cur)
                         self.spill()
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
+                        self.pay_off_month_dictionary[cur.data.name] = self.months_to_payoff + 1
                     else:
                         self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
@@ -168,6 +171,7 @@ class LinkedList:
                     cur.data.principal -= cur.data.minimum
                     if cur.data.principal <= 0:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
+                        self.pay_off_month_dictionary[cur.data.name] = self.months_to_payoff + 1
                         self.add_to_leftover(cur)
                         self.special_spill_not_head(cur, prev)
                     else:
@@ -179,7 +183,14 @@ class LinkedList:
 
             self.months_to_payoff += 1
 
+        print(self.pay_off_month_dictionary)
         return self.months_to_payoff
+
+    def preserve_payoff_priority(self):
+        cur = self.head
+        while cur:
+            self.pay_off_priority_list.append(cur)
+            cur = cur.next
 
     def prepare_pay_shit(self):
         if self.income > self.minimums:
@@ -189,6 +200,25 @@ class LinkedList:
             print("Just pay your minimums in order!")
         else:
             print("With ya broke ass.")
+
+    def construct_debt_output(self):
+        text = "Priority\n"
+        count = 1
+        for i in self.pay_off_priority_list:
+            text += (f"{count}.) " + i.data.name + "\n")
+            count += 1
+
+        return text
+
+    def construct_debt_output2(self):
+
+        text = "Months to Payoff\n"
+
+        for i in self.pay_off_month_dictionary.items():
+            temp = f"{i[0]} - {i[1]} months to payoff\n"
+            text += temp
+
+        return text
 
 
 # TODO: Move this somewhere else....
@@ -246,8 +276,11 @@ def run(income=None):
     else:
         print("With ya broke ass.")
 
+    linked_list.preserve_payoff_priority()
+    print(linked_list.construct_debt_output())
     # Expecting pay_shit() to return an int value.
     print(f"{linked_list.pay_shit()} month(s) till payoff")
+    print(linked_list.construct_debt_output2())
 
 
 if __name__ == '__main__':
