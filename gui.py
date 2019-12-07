@@ -152,14 +152,6 @@ class BillsWindow(QtWidgets.QDialog):
     def run_bills(self):
         if self.run_both is False:
             self.some_text = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
-            # if self.some_text is False:
-            #     self.some_text = "You don't have enough. With yo Broke ass."
-            # else:
-            #     self.some_text = str(self.some_text)
-            #     self.some_text = "You have enough!\n" \
-            #                      "You have " + self.some_text + " leftover\n" \
-            #                      "Save some amount from some pay period. Need fix."
-
             self.close()
         else:
             print("It wasn't false")
@@ -287,6 +279,8 @@ class Controller:
         self.bills = None
         self.income = None
         self.debt = None
+        self.bills_output = None
+        self.debt_output = None
 
     def change_run_both(self):
         self.run_both = True

@@ -13,6 +13,8 @@ class Bill:
         self.date = date
 
 
+# Parses a list of bill or payday objects
+# TODO: Turn into a class method of some sort or some shit.
 def add_amounts(some_list):
     total = 0
 
@@ -22,6 +24,8 @@ def add_amounts(some_list):
     return total
 
 
+# Parses a list of bill objects and separates them into pay-period based on the given range.
+# TODO: Turn into a class method of some sort or some shit.
 def separate_bills(bills_list, middle_range):
     pp1 = []
     pp2 = []
@@ -34,23 +38,24 @@ def separate_bills(bills_list, middle_range):
     return pp1, pp2
 
 
+# Create and return a PayDay object from user string input
 def get_pay_day(amount, date):
     payday = PayDay(int(amount), int(date))
     return payday
 
 
+# Create and return a Bill object from user string input
 def get_bill(name, amount, date):
     bill = Bill(name, int(amount), int(date))
     return bill
 
 
+# Console prototype for main bills function
 def test_run():
     # Creating paydays
-    # TODO: Fix when user input
     p1 = PayDay(1000, 5)
     p2 = PayDay(500, 25)
 
-    # TODO: Fix when user input
     # Creating Bills
     b1 = Bill("Insurance", 200, 2)
     b2 = Bill("Car", 500, 12)
@@ -75,7 +80,6 @@ def test_run():
         print(f"You have {left_over} left over")
 
         # Figure out which payday comes first in the month
-        # TODO: Almost certainly a better way to go about this.
         first_payday = min(p1.date, p2.date)
         second_payday = max(p1.date, p2.date)
 
@@ -99,6 +103,8 @@ def test_run():
     return left_over
 
 
+# Parses a dictionary and uses value retrieved for text output.
+# If passed False as a param, assumes not enough money.
 def dict_to_output_string(some_dict):
     if some_dict:
         text = "You have enough!\n" \
@@ -110,11 +116,12 @@ def dict_to_output_string(some_dict):
     return text
 
 
+# Main bills function. Returns an pre-formatted output string.
 def run(plist, blist, p1, p2):
+    # Create a dictionary to hold values used for string output
+    output_dictionary = {'leftover': None}
 
-    output_dictionary = {}
-
-    # Find totals
+    # Find totals of each list of objects
     paydays_sum = add_amounts(plist)
     bills_sum = add_amounts(blist)
 
@@ -122,9 +129,13 @@ def run(plist, blist, p1, p2):
     left_over = paydays_sum - bills_sum
 
     # Decide if there is enough money overall
+
+    # Changing output_dictionary to False signifies not having enough money.
     if left_over < 0:
         print("You don't have enough money!")
         output_dictionary = False
+
+    # If leftover is greater than 0 assign it as a value of its respective key.
     else:
         output_dictionary['leftover'] = left_over
         print("You have enough money!")
@@ -135,7 +146,10 @@ def run(plist, blist, p1, p2):
         first_payday = min(p1.date, p2.date)
         second_payday = max(p1.date, p2.date)
 
+        # Middle range will be the days covered by the first payday
+        # All other days not in this range will be covered bt the second payday
         middle = range(first_payday, second_payday)
+        # Separate the bills into two lists, each representing a given pay period
         first_pay_period, second_pay_period = separate_bills(blist, middle)
 
         # Total the amount of the bills for each pay period
@@ -152,6 +166,7 @@ def run(plist, blist, p1, p2):
         else:
             print(f"Save {pp2sum - p2.amount} from pp1")
 
+    # Final bills output string
     output_string = dict_to_output_string(output_dictionary)
     return output_string
 
