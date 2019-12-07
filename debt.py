@@ -1,5 +1,3 @@
-
-
 # Static functions
 def move_cursors(cur):
     prev = cur
