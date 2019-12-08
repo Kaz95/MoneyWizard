@@ -1,4 +1,8 @@
+# Handles all debt related backend
+
+
 # Static functions
+# TODO: These should actually be static methods.....actually.
 def move_cursors(cur):
     prev = cur
     cur = cur.next
@@ -16,7 +20,6 @@ def find_spillover(principal):
 
 
 # TODO: Variable names still mostly shit. Same with function names. Take another look when user input.
-# TODO: Import this
 class Node:
 
     def __init__(self, data):
@@ -25,35 +28,45 @@ class Node:
 
 
 # Purpose modified linked list class definition
-# TODO: Consider importing linked list and inherit....something....look it up.
 class LinkedList:
 
+    # TODO: Try to slim this down, or at least break into logical blocks. Look up a proper init
     def __init__(self):
         self.temp_leftover = 0  # Used to hold leftover during actual iteration. Refilled at the start of each pass.
         self.head = None
         self.income = 0     # The value that will eventually be passed from bills.py
-        self.minimums = 0   # Total minimum payment of all debts. Used to calculate if enough money for mins.
+        self.minimums = 0   # Total minimum payment of all debts. Used to calculate if enough money for minimums.
         self.leftover = 0   # L = (Income - minimums)
         self.months_to_payoff = 0   # ++ once per full pass of linked list
+        # Used to keep track of which debts have been paid during a given pass.
+        # Needed to decide if interest needs recalculating
         self.interest_already_paid = []
-        self.pay_off_priority_list = []
-        self.pay_off_month_dictionary = {}
+        self.pay_off_priority_list = []  # Used to preserve payoff priority for final debt output string
+        self.pay_off_month_dictionary = {}  # Used to capture pay off month of each debt for output string
 
+    # TODO: finish debt.py and gui.py comments
+    # Prepare cursors for list traversal
+    # Start from head
     def prime_cursors(self):
         cur = self.head
         prev = None
         return cur, prev
 
+    # Insert new head node
     def insert_new_head(self, node):
         temp = self.head
         self.head = node
         self.head.next = temp
 
+    # Remove previously incurred interest in preparation for interest recalculation
+    # Used when payment spills over into new node
     def prepare_recalc(self, spillover):
         self.head.data.principal -= self.head.data.interest_incurred
         self.head.data.principal -= spillover
         print(self.head.data.name, round(self.head.data.principal, 2))
 
+    # Single function that calculates and incurs interest
+    # Generates interest on head node by default unless a node is passes as param
     def generate_interest(self, cur=None):
         if cur:
             cur.data.interest_incurred = cur.data.principal * cur.data.interest
@@ -63,6 +76,7 @@ class LinkedList:
             self.head.data.principal += self.head.data.interest_incurred
             print(self.head.data.name, round(self.head.data.principal, 2))
 
+    # Used to increased leftover amount after a give cursor is paid off.
     def add_to_leftover(self, cur):
         self.leftover += cur.data.minimum
 
@@ -94,14 +108,13 @@ class LinkedList:
                     self.insert_new_head(node)
 
     # Currently used to visually ensure list has been sorted correctly.
-    # TODO: Unittest with setup/teardown...?
     def print_list(self):
         temp = self.head
         while temp:
             print(temp.data.name)
             temp = temp.next
 
-    # Recursive function to handle spillover from paid off debts.
+    # Recursive function to handle spillover from paid off head node.
     def spill(self):
         if self.head.data.principal <= 0:
             spillover = find_spillover(self.head.data.principal)
@@ -112,6 +125,7 @@ class LinkedList:
                 self.spill()
 
     # TODO: Unittest
+    # Recursive function to handle spillover from paid off cursor node.
     def special_spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
             spillover = find_spillover(cur.data.principal)
@@ -125,6 +139,8 @@ class LinkedList:
                     self.generate_interest()
 
     # TODO: Unittest
+    # Handles a cursor node being paid off, and its spill over paying off the head node.
+    # Only used within special_spill_not_head()
     def special_spill(self):
         if self.head.data.principal <= 0:
             spillover = find_spillover(self.head.data.principal)
@@ -151,7 +167,7 @@ class LinkedList:
         while self.head:
             cur, prev = self.prime_cursors()
             self.temp_leftover += self.leftover
-            self.interest_already_paid = []
+
             while cur:
                 if cur == self.head:
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
@@ -184,21 +200,14 @@ class LinkedList:
         print(self.pay_off_month_dictionary)
         return self.months_to_payoff
 
+    # Traverse list and append each node to a list
     def preserve_payoff_priority(self):
         cur = self.head
         while cur:
             self.pay_off_priority_list.append(cur)
             cur = cur.next
 
-    def prepare_pay_shit(self):
-        if self.income > self.minimums:
-            self.leftover = this_many = self.income - self.minimums
-            print(f"You have {this_many} extra!")
-        elif self.income == self.minimums:
-            print("Just pay your minimums in order!")
-        else:
-            print("With ya broke ass.")
-
+    # TODO: I'm not even commenting this until I clean it up.
     def construct_debt_output(self):
         text = "Priority\n"
         count = 1
@@ -208,6 +217,7 @@ class LinkedList:
 
         return text
 
+    # TODO: Clean it up.
     def construct_debt_output2(self):
 
         text = "Months to Payoff\n"
@@ -219,7 +229,7 @@ class LinkedList:
         return text
 
 
-# TODO: Move this somewhere else....
+# TODO: Move this somewhere else.........
 class Debt:
 
     def __init__(self, name, principal, interest, minimum):
@@ -230,13 +240,7 @@ class Debt:
         self.interest_incurred = 0
 
 
-# Prototype function for accepting user input and turning it into debt objects.
-# TODO: Unittest
-def create_debt(name, principal, interest, minimum):
-    dboi = Debt(name, principal, interest, minimum)
-    return dboi
-
-
+# Only used for exploratory testing. Remove at some point.
 def run(income=None):
     # Test debts
     d1 = Debt("credit card", 40, .04, 10)

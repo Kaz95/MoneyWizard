@@ -1,9 +1,19 @@
+# Frontend using PyQt5 GUI library
+# Uses MVC architecture pattern
+
 import sys
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.uic import loadUi
 import bills
 import debt
+# Required for GUI to appear correctly on high DPI displays.
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
+# Each window will inherit from the QtWidgets.Dialog Class, except the main menu which inherits from QMainWindow
+# Each window will call QWidget.__init__(self) during initialization
+# Each window will use loadUi() on its respective .ui file to load the UI.
+# TODO: Decide how I want to handle widget discovery.
+# TODO: Figure out how to reuse regular expressions/validators.
 
 
 class MenuWindow(QtWidgets.QMainWindow):
@@ -34,7 +44,6 @@ class MenuWindow(QtWidgets.QMainWindow):
         self.both_signal.emit()
 
 
-# TODO: Re-write with signals emitting object variables.
 class PayDayWindow(QtWidgets.QDialog):
     bills_window_signal = QtCore.pyqtSignal(object, object)
 
@@ -251,7 +260,6 @@ class DebtWindow(QtWidgets.QDialog):
         self.minimum_line_edit.clear()
 
     def run(self):
-        self.linked_list.prepare_pay_shit()
         self.linked_list.preserve_payoff_priority()
         self.text1 = self.linked_list.construct_debt_output()
         print(f"{self.linked_list.pay_shit()} month(s) till payoff")

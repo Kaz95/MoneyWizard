@@ -1,3 +1,6 @@
+# Handles all bill related backend
+
+
 class PayDay:
 
     def __init__(self, amount, date):
