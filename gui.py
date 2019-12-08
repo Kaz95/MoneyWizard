@@ -12,7 +12,9 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 # Each window will inherit from the QtWidgets.Dialog Class, except the main menu which inherits from QMainWindow
 # Each window will call QWidget.__init__(self) during initialization
 # Each window will use loadUi() on its respective .ui file to load the UI.
-# TODO: Decide how I want to handle widget discovery.
+# TODO: !!! ALWAYS UPDATE A GIVEN WINDOWS __init__ WHEN ADDING, REMOVING, OR UPDATING WIDGETS !!!
+
+
 # TODO: Figure out how to reuse regular expressions/validators.
 
 
@@ -23,15 +25,15 @@ class MenuWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
-        # self.bills_btn = None
+        self.bills_btn = None
+        self.debt_btn = None
+        self.both_btn = None
+
         loadUi("menu.ui", self)
-        self.bills_btn = self.findChild(QtWidgets.QPushButton, "bills_btn")
+
+        # self.bills_btn = self.findChild(QtWidgets.QPushButton, "bills_btn")
         self.bills_btn.clicked.connect(self.switch_payday_window)
-
-        self.debt_btn = self.findChild(QtWidgets.QPushButton, "debt_btn")
         self.debt_btn.clicked.connect(self.switch_income_window)
-
-        self.both_btn = self.findChild(QtWidgets.QPushButton, "both_btn")
         self.both_btn.clicked.connect(self.emit_both_signal)
 
     def switch_payday_window(self):
@@ -49,25 +51,26 @@ class PayDayWindow(QtWidgets.QDialog):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        self.add_btn = None
+        self.done_btn = None
         self.date_line_edit = None
         self.amt_line_edit = None
+
+        # TODO: p1 and p2 should be in bills.py and imported if/when needed.
         self.p1 = None
         self.p2 = None
 
         loadUi("payday.ui", self)
-        regex = QtCore.QRegExp("[0-9]+")
-        validator = QtGui.QRegExpValidator(regex)
+        is_digit_regex = QtCore.QRegExp("[0-9]+")
+        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
 
-        self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.switch_bills_window)
-
-        self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_payday)
 
-        self.amt_line_edit.setValidator(validator)
+        self.amt_line_edit.setValidator(is_digit_validator)
         self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-        self.date_line_edit.setValidator(validator)
+        self.date_line_edit.setValidator(is_digit_validator)
         self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
     def not_numeric_messagebox(self):
@@ -103,6 +106,11 @@ class BillsWindow(QtWidgets.QDialog):
         self.p2 = p2
         self.run_both = run_both
 
+        self.output_text = None
+
+        self.done_btn = None
+        self.add_btn = None
+
         BillsWindow.pay_day_list.append(p1)
         BillsWindow.pay_day_list.append(p2)
 
@@ -114,13 +122,12 @@ class BillsWindow(QtWidgets.QDialog):
         is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
         is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
         is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
+
         loadUi("bills.ui", self)
 
-        self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.run_bills)
         self.done_btn.clicked.connect(self.switch_bills_output_window)
 
-        self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_bill)
 
         self.amt_line_edit.setValidator(is_digit_validator)
@@ -156,11 +163,11 @@ class BillsWindow(QtWidgets.QDialog):
         self.debt_window_signal.emit(left_over)
 
     def switch_bills_output_window(self):
-        self.bills_output_signal.emit(self.some_text)
+        self.bills_output_signal.emit(self.output_text)
 
     def run_bills(self):
         if self.run_both is False:
-            self.some_text = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+            self.output_text = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
             self.close()
         else:
             print("It wasn't false")
@@ -171,6 +178,7 @@ class BillsOutputWindow(QtWidgets.QDialog):
 
     def __init__(self, text):
         QtWidgets.QWidget.__init__(self)
+        self.plainTextEdit = None
         loadUi("bills_output.ui", self)
         self.plainTextEdit.insertPlainText(text + "\n")
 
@@ -181,12 +189,11 @@ class IncomeWindow(QtWidgets.QDialog):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
         self.amt_line_edit = None
-
+        self.done_btn = None
         loadUi("income.ui", self)
         is_digit_regex = QtCore.QRegExp("[0-9]+")
         is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
 
-        self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.switch_debt_window)
 
         self.amt_line_edit.setValidator(is_digit_validator)
@@ -208,6 +215,8 @@ class DebtWindow(QtWidgets.QDialog):
         self.principal_line_edit = None
         self.interest_line_edit = None
         self.minimum_line_edit = None
+        self.add_btn = None
+        self.done_btn = None
         self.text1 = None
         self.text2 = None
 
@@ -221,10 +230,8 @@ class DebtWindow(QtWidgets.QDialog):
         self.linked_list = debt.LinkedList()
         self.linked_list.income = int(income)
 
-        self.add_btn = self.findChild(QtWidgets.QPushButton, "add_btn")
         self.add_btn.clicked.connect(self.add_debt)
 
-        self.done_btn = self.findChild(QtWidgets.QPushButton, "done_btn")
         self.done_btn.clicked.connect(self.run)
 
         self.name_line_edit.setValidator(is_alnum_validator)
@@ -275,6 +282,7 @@ class DebtOutputWindow(QtWidgets.QDialog):
     def __init__(self, text1, text2):
         QtWidgets.QWidget.__init__(self)
         loadUi("debt_output.ui", self)
+        # Leaving this widget unnamed and undiscovered to show it still works
         self.plainTextEdit.insertPlainText(text1 + "\n")
         self.plainTextEdit.insertPlainText(text2 + "\n")
 
@@ -304,7 +312,6 @@ class Controller:
 
     def show_payday(self):
         self.payday = PayDayWindow()
-        # self.menu.close()
         self.payday.bills_window_signal.connect(self.show_bills)
         self.payday.exec_()
 
@@ -322,7 +329,6 @@ class Controller:
 
     def show_income(self):
         self.income = IncomeWindow()
-        # self.menu.close()
         self.income.debt_window_signal.connect(self.show_debt)
         self.income.exec_()
 

@@ -21,22 +21,24 @@ class Bill:
 def add_amounts(some_list):
     total = 0
 
-    for i in some_list:
-        total += i.amount
+    for obj in some_list:
+        total += obj.amount
 
     return total
 
 
 # Parses a list of bill objects and separates them into pay-period based on the given range.
+# middle_range should be the range of dates between first and second payday.
+# Each list returned represents a pay period.
 # TODO: Turn into a class method of some sort or some shit.
-def separate_bills(bills_list, middle_range):
+def separate_bills(list_of_bills, middle_range):
     pp1 = []
     pp2 = []
-    for _ in bills_list:
-        if _.date in middle_range:
-            pp1.append(_)
+    for bill in list_of_bills:
+        if bill.date in middle_range:
+            pp1.append(bill)
         else:
-            pp2.append(_)
+            pp2.append(bill)
 
     return pp1, pp2
 
@@ -54,6 +56,7 @@ def get_bill(name, amount, date):
 
 
 # Console prototype for main bills function
+# TODO: Move this once class/static methods.
 def test_run():
     # Creating paydays
     p1 = PayDay(1000, 5)
@@ -120,13 +123,13 @@ def dict_to_output_string(some_dict):
 
 
 # Main bills function. Returns an pre-formatted output string.
-def run(plist, blist, p1, p2):
+def run(payday_list, bills_list, payday1, payday2):
     # Create a dictionary to hold values used for string output
     output_dictionary = {'leftover': None}
 
     # Find totals of each list of objects
-    paydays_sum = add_amounts(plist)
-    bills_sum = add_amounts(blist)
+    paydays_sum = add_amounts(payday_list)
+    bills_sum = add_amounts(bills_list)
 
     # Leftover will be the value passed to debt.py
     left_over = paydays_sum - bills_sum
@@ -146,14 +149,14 @@ def run(plist, blist, p1, p2):
 
         # Figure out which payday comes first in the month
         # TODO: Almost certainly a better way to go about this.
-        first_payday = min(p1.date, p2.date)
-        second_payday = max(p1.date, p2.date)
+        first_payday = min(payday1.date, payday2.date)
+        second_payday = max(payday1.date, payday2.date)
 
         # Middle range will be the days covered by the first payday
         # All other days not in this range will be covered bt the second payday
-        middle = range(first_payday, second_payday)
+        middle_range = range(first_payday, second_payday)
         # Separate the bills into two lists, each representing a given pay period
-        first_pay_period, second_pay_period = separate_bills(blist, middle)
+        first_pay_period, second_pay_period = separate_bills(bills_list, middle_range)
 
         # Total the amount of the bills for each pay period
         pp1sum = add_amounts(first_pay_period)
@@ -162,12 +165,12 @@ def run(plist, blist, p1, p2):
         # TODO: This logic assumes that p1 is first payday of the month.
         # TODO: Fix ASAP, starting to get annoying.
         # Logic that determines which pay period has a surplus, or if both do.
-        if p1.amount > pp1sum and p2.amount > pp2sum:
+        if payday1.amount > pp1sum and payday2.amount > pp2sum:
             print("I'm rich bitch!")
-        elif p1.amount < pp1sum:
-            print(f"Save {pp1sum - p1.amount} from pp2")
+        elif payday1.amount < pp1sum:
+            print(f"Save {pp1sum - payday1.amount} from pp2")
         else:
-            print(f"Save {pp2sum - p2.amount} from pp1")
+            print(f"Save {pp2sum - payday2.amount} from pp1")
 
     # Final bills output string
     output_string = dict_to_output_string(output_dictionary)

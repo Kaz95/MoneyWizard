@@ -14,12 +14,12 @@ def insert(node, cur, prev):
     prev.next.next = cur
 
 
+# This function is expecting a negative number.
 def find_spillover(principal):
     spillover = 0 - principal
     return spillover
 
 
-# TODO: Variable names still mostly shit. Same with function names. Take another look when user input.
 class Node:
 
     def __init__(self, data):
@@ -40,7 +40,7 @@ class LinkedList:
         self.months_to_payoff = 0   # ++ once per full pass of linked list
         # Used to keep track of which debts have been paid during a given pass.
         # Needed to decide if interest needs recalculating
-        self.interest_already_paid = []
+        self.interest_already_paid_list = []
         self.pay_off_priority_list = []  # Used to preserve payoff priority for final debt output string
         self.pay_off_month_dictionary = {}  # Used to capture pay off month of each debt for output string
 
@@ -109,10 +109,10 @@ class LinkedList:
 
     # Currently used to visually ensure list has been sorted correctly.
     def print_list(self):
-        temp = self.head
-        while temp:
-            print(temp.data.name)
-            temp = temp.next
+        cur = self.head
+        while cur:
+            print(cur.data.name)
+            cur = cur.next
 
     # Recursive function to handle spillover from paid off head node.
     def spill(self):
@@ -146,7 +146,7 @@ class LinkedList:
             spillover = find_spillover(self.head.data.principal)
             self.head = self.head.next
             if self.head:
-                if self.head in self.interest_already_paid:
+                if self.head in self.interest_already_paid_list:
                     self.prepare_recalc(spillover)
 
                     if self.head.data.principal <= 0:
@@ -180,7 +180,7 @@ class LinkedList:
                     else:
                         self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
-                        self.interest_already_paid.append(cur)
+                        self.interest_already_paid_list.append(cur)
                 else:
                     cur.data.principal -= cur.data.minimum
                     if cur.data.principal <= 0:
@@ -191,7 +191,7 @@ class LinkedList:
                     else:
                         self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
-                        self.interest_already_paid.append(cur)
+                        self.interest_already_paid_list.append(cur)
 
                 cur, prev = move_cursors(cur)
 
@@ -211,8 +211,8 @@ class LinkedList:
     def construct_debt_output(self):
         text = "Priority\n"
         count = 1
-        for i in self.pay_off_priority_list:
-            text += (f"{count}.) " + i.data.name + "\n")
+        for debt in self.pay_off_priority_list:
+            text += (f"{count}.) " + debt.data.name + "\n")
             count += 1
 
         return text
@@ -222,8 +222,8 @@ class LinkedList:
 
         text = "Months to Payoff\n"
 
-        for i in self.pay_off_month_dictionary.items():
-            temp = f"{i[0]} - {i[1]} months to payoff\n"
+        for tup in self.pay_off_month_dictionary.items():
+            temp = f"{tup[0]} - {tup[1]} months to payoff\n"
             text += temp
 
         return text
