@@ -16,6 +16,20 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 
 # TODO: Figure out how to reuse regular expressions/validators.
+class SharedWindowMethods:
+    def __init__(self):
+        is_digit_regex = QtCore.QRegExp("[0-9]+")
+        self.is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
+
+        is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
+        self.is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
+
+    # These methods will sling errors due to the way im using multiple inheritance
+    def not_numeric_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+
+    def not_alnum_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
 
 class MenuWindow(QtWidgets.QMainWindow):
@@ -46,7 +60,7 @@ class MenuWindow(QtWidgets.QMainWindow):
         self.both_signal.emit()
 
 
-class PayDayWindow(QtWidgets.QDialog):
+class PayDayWindow(QtWidgets.QDialog, SharedWindowMethods):
     bills_window_signal = QtCore.pyqtSignal(object, object)
 
     def __init__(self):
@@ -61,20 +75,18 @@ class PayDayWindow(QtWidgets.QDialog):
         self.p2 = None
 
         loadUi("payday.ui", self)
-        is_digit_regex = QtCore.QRegExp("[0-9]+")
-        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
 
         self.done_btn.clicked.connect(self.switch_bills_window)
         self.add_btn.clicked.connect(self.add_payday)
 
-        self.amt_line_edit.setValidator(is_digit_validator)
+        self.amt_line_edit.setValidator(self.is_digit_validator)
         self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-        self.date_line_edit.setValidator(is_digit_validator)
+        self.date_line_edit.setValidator(self.is_digit_validator)
         self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-    def not_numeric_messagebox(self):
-        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+    # def not_numeric_messagebox(self):
+    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
 
     def switch_bills_window(self):
         self.bills_window_signal.emit(self.p1, self.p2)
@@ -93,7 +105,7 @@ class PayDayWindow(QtWidgets.QDialog):
         self.date_line_edit.clear()
 
 
-class BillsWindow(QtWidgets.QDialog):
+class BillsWindow(QtWidgets.QDialog, SharedWindowMethods):
     bills_output_signal = QtCore.pyqtSignal(str)
     debt_window_signal = QtCore.pyqtSignal(str)
 
@@ -118,11 +130,6 @@ class BillsWindow(QtWidgets.QDialog):
         self.date_line_edit = None
         self.name_line_edit = None
 
-        is_digit_regex = QtCore.QRegExp("[0-9]+")
-        is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
-        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
-        is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
-
         loadUi("bills.ui", self)
 
         self.done_btn.clicked.connect(self.run_bills)
@@ -130,20 +137,20 @@ class BillsWindow(QtWidgets.QDialog):
 
         self.add_btn.clicked.connect(self.add_bill)
 
-        self.amt_line_edit.setValidator(is_digit_validator)
+        self.amt_line_edit.setValidator(self.is_digit_validator)
         self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-        self.date_line_edit.setValidator(is_digit_validator)
+        self.date_line_edit.setValidator(self.is_digit_validator)
         self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-        self.name_line_edit.setValidator(is_alnum_validator)
+        self.name_line_edit.setValidator(self.is_alnum_validator)
         self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
 
-    def not_numeric_messagebox(self):
-        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
-
-    def not_alnum_messagebox(self):
-        QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
+    # def not_numeric_messagebox(self):
+    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+    #
+    # def not_alnum_messagebox(self):
+    #     QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
     def add_bill(self):
         name = self.name_line_edit.text()
@@ -183,7 +190,7 @@ class BillsOutputWindow(QtWidgets.QDialog):
         self.plainTextEdit.insertPlainText(text + "\n")
 
 
-class IncomeWindow(QtWidgets.QDialog):
+class IncomeWindow(QtWidgets.QDialog, SharedWindowMethods):
     debt_window_signal = QtCore.pyqtSignal(str)
 
     def __init__(self):
@@ -191,22 +198,20 @@ class IncomeWindow(QtWidgets.QDialog):
         self.amt_line_edit = None
         self.done_btn = None
         loadUi("income.ui", self)
-        is_digit_regex = QtCore.QRegExp("[0-9]+")
-        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
 
         self.done_btn.clicked.connect(self.switch_debt_window)
 
-        self.amt_line_edit.setValidator(is_digit_validator)
+        self.amt_line_edit.setValidator(self.is_digit_validator)
         self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-    def not_numeric_messagebox(self):
-        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+    # def not_numeric_messagebox(self):
+    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
 
     def switch_debt_window(self):
         self.debt_window_signal.emit(self.amt_line_edit.text())
 
 
-class DebtWindow(QtWidgets.QDialog):
+class DebtWindow(QtWidgets.QDialog, SharedWindowMethods):
     debt_output_signal = QtCore.pyqtSignal(str, str)
 
     def __init__(self, income):
@@ -221,10 +226,6 @@ class DebtWindow(QtWidgets.QDialog):
         self.text2 = None
 
         loadUi("debt.ui", self)
-        is_digit_regex = QtCore.QRegExp("[0-9]+")
-        is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
-        is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
-        is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
         print(f"Income: {income}")
 
         self.linked_list = debt.LinkedList()
@@ -234,23 +235,23 @@ class DebtWindow(QtWidgets.QDialog):
 
         self.done_btn.clicked.connect(self.run)
 
-        self.name_line_edit.setValidator(is_alnum_validator)
+        self.name_line_edit.setValidator(self.is_alnum_validator)
         self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
 
-        self.principal_line_edit.setValidator(is_digit_validator)
+        self.principal_line_edit.setValidator(self.is_digit_validator)
         self.principal_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
         # self.interest_line_edit.setValidator(is_digit_validator)
         # self.interest_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-        self.minimum_line_edit.setValidator(is_digit_validator)
+        self.minimum_line_edit.setValidator(self.is_digit_validator)
         self.minimum_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-    def not_numeric_messagebox(self):
-        QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
-
-    def not_alnum_messagebox(self):
-        QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
+    # def not_numeric_messagebox(self):
+    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
+    #
+    # def not_alnum_messagebox(self):
+    #     QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
     def add_debt(self):
         name = self.name_line_edit.text()
