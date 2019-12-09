@@ -1,30 +1,21 @@
 # Handles all debt related backend
 
 
-# Static functions
-# TODO: These should actually be static methods.....actually.
-def move_cursors(cur):
-    prev = cur
-    cur = cur.next
-    return cur, prev
-
-
-def insert(node, cur, prev):
-    prev.next = node
-    prev.next.next = cur
-
-
-# This function is expecting a negative number.
-def find_spillover(principal):
-    spillover = 0 - principal
-    return spillover
-
-
 class Node:
 
     def __init__(self, data):
         self.data = data
         self.next = None
+
+
+class Debt:
+
+    def __init__(self, name, principal, interest, minimum):
+        self.name = name
+        self.principal = principal
+        self.interest = interest
+        self.minimum = minimum
+        self.interest_incurred = 0
 
 
 # Purpose modified linked list class definition
@@ -51,6 +42,22 @@ class LinkedList:
         cur = self.head
         prev = None
         return cur, prev
+
+    @staticmethod
+    def move_cursors(cur):
+        prev = cur
+        cur = cur.next
+        return cur, prev
+
+    @staticmethod
+    def insert(node, cur, prev):
+        prev.next = node
+        prev.next.next = cur
+
+    @staticmethod
+    def find_spillover(principal):
+        spillover = 0 - principal
+        return spillover
 
     # Insert new head node
     def insert_new_head(self, node):
@@ -93,12 +100,12 @@ class LinkedList:
             cur, prev = self.prime_cursors()
             while cur is not None:
                 if node.data.interest < cur.data.interest:
-                    cur, prev = move_cursors(cur)
+                    cur, prev = LinkedList.move_cursors(cur)
                 elif prev is None:
                     self.insert_new_head(node)
                     break
                 else:
-                    insert(node, cur, prev)
+                    LinkedList.insert(node, cur, prev)
                     break
 
             if cur is None:
@@ -117,7 +124,7 @@ class LinkedList:
     # Recursive function to handle spillover from paid off head node.
     def spill(self):
         if self.head.data.principal <= 0:
-            spillover = find_spillover(self.head.data.principal)
+            spillover = LinkedList.find_spillover(self.head.data.principal)
             self.head = self.head.next
             if self.head:
                 self.head.data.principal -= spillover
@@ -128,7 +135,7 @@ class LinkedList:
     # Recursive function to handle spillover from paid off cursor node.
     def special_spill_not_head(self, cur, prev):
         if cur.data.principal <= 0:
-            spillover = find_spillover(cur.data.principal)
+            spillover = LinkedList.find_spillover(cur.data.principal)
             prev.next = cur.next
             if self.head:
                 self.prepare_recalc(spillover)
@@ -143,7 +150,7 @@ class LinkedList:
     # Only used within special_spill_not_head()
     def special_spill(self):
         if self.head.data.principal <= 0:
-            spillover = find_spillover(self.head.data.principal)
+            spillover = LinkedList.find_spillover(self.head.data.principal)
             self.head = self.head.next
             if self.head:
                 if self.head in self.interest_already_paid_list:
@@ -193,7 +200,7 @@ class LinkedList:
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid_list.append(cur)
 
-                cur, prev = move_cursors(cur)
+                cur, prev = LinkedList.move_cursors(cur)
 
             self.months_to_payoff += 1
 
@@ -227,17 +234,6 @@ class LinkedList:
             text += temp
 
         return text
-
-
-# TODO: Move this somewhere else.........
-class Debt:
-
-    def __init__(self, name, principal, interest, minimum):
-        self.name = name
-        self.principal = principal
-        self.interest = interest
-        self.minimum = minimum
-        self.interest_incurred = 0
 
 
 # Only used for exploratory testing. Remove at some point.

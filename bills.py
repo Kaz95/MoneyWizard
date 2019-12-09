@@ -7,50 +7,43 @@ class PayDay:
         self.amount = amount
         self.date = date
 
+    @staticmethod
+    def add_amounts(some_list):
+        total = 0
 
-class Bill:
+        for obj in some_list:
+            total += obj.amount
+
+        return total
+
+
+class Bill(PayDay):
 
     def __init__(self, name, amount, date):
-        self.name = name
-        self.amount = amount
+        PayDay.__init__(self, name, amount)
         self.date = date
 
+    @staticmethod
+    def separate_bills(list_of_bills, middle_range):
+        pp1 = []
+        pp2 = []
+        for bill in list_of_bills:
+            if bill.date in middle_range:
+                pp1.append(bill)
+            else:
+                pp2.append(bill)
 
-# Parses a list of bill or payday objects
-# TODO: Turn into a class method of some sort or some shit.
-def add_amounts(some_list):
-    total = 0
-
-    for obj in some_list:
-        total += obj.amount
-
-    return total
-
-
-# Parses a list of bill objects and separates them into pay-period based on the given range.
-# middle_range should be the range of dates between first and second payday.
-# Each list returned represents a pay period.
-# TODO: Turn into a class method of some sort or some shit.
-def separate_bills(list_of_bills, middle_range):
-    pp1 = []
-    pp2 = []
-    for bill in list_of_bills:
-        if bill.date in middle_range:
-            pp1.append(bill)
-        else:
-            pp2.append(bill)
-
-    return pp1, pp2
+        return pp1, pp2
 
 
 # Create and return a PayDay object from user string input
-def get_pay_day(amount, date):
+def create_payday(amount, date):
     payday = PayDay(int(amount), int(date))
     return payday
 
 
 # Create and return a Bill object from user string input
-def get_bill(name, amount, date):
+def create_bill(name, amount, date):
     bill = Bill(name, int(amount), int(date))
     return bill
 
@@ -72,8 +65,8 @@ def test_run():
     bills = [b1, b2, b3]
 
     # Find totals
-    paydays_sum = add_amounts(pay_days)
-    bills_sum = add_amounts(bills)
+    paydays_sum = PayDay.add_amounts(pay_days)
+    bills_sum = Bill.add_amounts(bills)
 
     # Leftover will be the value passed to debt.py
     left_over = paydays_sum - bills_sum
@@ -90,11 +83,11 @@ def test_run():
         second_payday = max(p1.date, p2.date)
 
         middle = range(first_payday, second_payday)
-        first_pay_period, second_pay_period = separate_bills(bills, middle)
+        first_pay_period, second_pay_period = Bill.separate_bills(bills, middle)
 
         # Total the amount of the bills for each pay period
-        pp1sum = add_amounts(first_pay_period)
-        pp2sum = add_amounts(second_pay_period)
+        pp1sum = Bill.add_amounts(first_pay_period)
+        pp2sum = Bill.add_amounts(second_pay_period)
 
         # Logic that determines which pay period has a surplus, or if both do.
         if p1.amount > pp1sum and p2.amount > pp2sum:
@@ -128,8 +121,8 @@ def run(payday_list, bills_list, payday1, payday2):
     output_dictionary = {'leftover': None}
 
     # Find totals of each list of objects
-    paydays_sum = add_amounts(payday_list)
-    bills_sum = add_amounts(bills_list)
+    paydays_sum = PayDay.add_amounts(payday_list)
+    bills_sum = Bill.add_amounts(bills_list)
 
     # Leftover will be the value passed to debt.py
     left_over = paydays_sum - bills_sum
@@ -156,11 +149,11 @@ def run(payday_list, bills_list, payday1, payday2):
         # All other days not in this range will be covered bt the second payday
         middle_range = range(first_payday, second_payday)
         # Separate the bills into two lists, each representing a given pay period
-        first_pay_period, second_pay_period = separate_bills(bills_list, middle_range)
+        first_pay_period, second_pay_period = Bill.separate_bills(bills_list, middle_range)
 
         # Total the amount of the bills for each pay period
-        pp1sum = add_amounts(first_pay_period)
-        pp2sum = add_amounts(second_pay_period)
+        pp1sum = Bill.add_amounts(first_pay_period)
+        pp2sum = Bill.add_amounts(second_pay_period)
 
         # TODO: This logic assumes that p1 is first payday of the month.
         # TODO: Fix ASAP, starting to get annoying.

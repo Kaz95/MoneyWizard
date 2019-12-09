@@ -15,7 +15,6 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 # TODO: !!! ALWAYS UPDATE A GIVEN WINDOWS __init__ WHEN ADDING, REMOVING, OR UPDATING WIDGETS !!!
 
 
-# TODO: Figure out how to reuse regular expressions/validators.
 class SharedWindowMethods:
     def __init__(self):
         is_digit_regex = QtCore.QRegExp("[0-9]+")
@@ -85,16 +84,13 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowMethods):
         self.date_line_edit.setValidator(self.is_digit_validator)
         self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-    # def not_numeric_messagebox(self):
-    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
-
     def switch_bills_window(self):
         self.bills_window_signal.emit(self.p1, self.p2)
 
     def add_payday(self):
         amount = self.amt_line_edit.text()
         date = self.date_line_edit.text()
-        payday = bills.get_pay_day(amount, date)
+        payday = bills.create_payday(amount, date)
         if self.p1 is None:
             self.p1 = payday
         else:
@@ -146,18 +142,12 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowMethods):
         self.name_line_edit.setValidator(self.is_alnum_validator)
         self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
 
-    # def not_numeric_messagebox(self):
-    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
-    #
-    # def not_alnum_messagebox(self):
-    #     QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
-
     def add_bill(self):
         name = self.name_line_edit.text()
         amount = self.amt_line_edit.text()
         date = self.date_line_edit.text()
 
-        bill = bills.get_bill(name, amount, date)
+        bill = bills.create_bill(name, amount, date)
         BillsWindow.bills_list.append(bill)
 
         self.name_line_edit.clear()
@@ -204,9 +194,6 @@ class IncomeWindow(QtWidgets.QDialog, SharedWindowMethods):
         self.amt_line_edit.setValidator(self.is_digit_validator)
         self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-    # def not_numeric_messagebox(self):
-    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
-
     def switch_debt_window(self):
         self.debt_window_signal.emit(self.amt_line_edit.text())
 
@@ -246,12 +233,6 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowMethods):
 
         self.minimum_line_edit.setValidator(self.is_digit_validator)
         self.minimum_line_edit.inputRejected.connect(self.not_numeric_messagebox)
-
-    # def not_numeric_messagebox(self):
-    #     QtWidgets.QMessageBox.critical(self, "Isn't Numeric", "Isn't Numeric")
-    #
-    # def not_alnum_messagebox(self):
-    #     QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
     def add_debt(self):
         name = self.name_line_edit.text()
