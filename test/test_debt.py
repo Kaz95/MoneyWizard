@@ -17,10 +17,10 @@ class TestDebt(unittest.TestCase):
         self.d5 = debt.Debt("To be inserted", 150, 0, 10)
 
         self.linked_list = debt.LinkedList()
-        self.linked_list.fill_list(self.d1)
-        self.linked_list.fill_list(self.d2)
-        self.linked_list.fill_list(self.d3)
-        self.linked_list.fill_list(self.d4)
+        self.linked_list.auto_insert(self.d1)
+        self.linked_list.auto_insert(self.d2)
+        self.linked_list.auto_insert(self.d3)
+        self.linked_list.auto_insert(self.d4)
 
     def test_move_cursors(self):
         cur = self.linked_list.head

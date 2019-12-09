@@ -15,7 +15,7 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 # TODO: !!! ALWAYS UPDATE A GIVEN WINDOWS __init__ WHEN ADDING, REMOVING, OR UPDATING WIDGETS !!!
 
 
-class SharedWindowMethods:
+class SharedWindowAttributes:
     def __init__(self):
         is_digit_regex = QtCore.QRegExp("[0-9]+")
         self.is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
@@ -59,7 +59,7 @@ class MenuWindow(QtWidgets.QMainWindow):
         self.both_signal.emit()
 
 
-class PayDayWindow(QtWidgets.QDialog, SharedWindowMethods):
+class PayDayWindow(QtWidgets.QDialog, SharedWindowAttributes):
     bills_window_signal = QtCore.pyqtSignal(object, object)
 
     def __init__(self):
@@ -101,7 +101,7 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowMethods):
         self.date_line_edit.clear()
 
 
-class BillsWindow(QtWidgets.QDialog, SharedWindowMethods):
+class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
     bills_output_signal = QtCore.pyqtSignal(str)
     debt_window_signal = QtCore.pyqtSignal(str)
 
@@ -180,7 +180,7 @@ class BillsOutputWindow(QtWidgets.QDialog):
         self.plainTextEdit.insertPlainText(text + "\n")
 
 
-class IncomeWindow(QtWidgets.QDialog, SharedWindowMethods):
+class IncomeWindow(QtWidgets.QDialog, SharedWindowAttributes):
     debt_window_signal = QtCore.pyqtSignal(str)
 
     def __init__(self):
@@ -198,7 +198,7 @@ class IncomeWindow(QtWidgets.QDialog, SharedWindowMethods):
         self.debt_window_signal.emit(self.amt_line_edit.text())
 
 
-class DebtWindow(QtWidgets.QDialog, SharedWindowMethods):
+class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
     debt_output_signal = QtCore.pyqtSignal(str, str)
 
     def __init__(self, income):
@@ -241,7 +241,7 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowMethods):
         minimum = int(self.minimum_line_edit.text())
 
         some_debt = debt.Debt(name, principal, interest, minimum)
-        self.linked_list.fill_list(some_debt)
+        self.linked_list.auto_insert(some_debt)
 
         self.name_line_edit.clear()
         self.principal_line_edit.clear()
@@ -250,9 +250,9 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowMethods):
 
     def run(self):
         self.linked_list.preserve_payoff_priority()
-        self.text1 = self.linked_list.construct_debt_output()
-        print(f"{self.linked_list.pay_shit()} month(s) till payoff")
-        self.text2 = self.linked_list.construct_debt_output2()
+        self.text1 = self.linked_list.construct_debt_priority_output()
+        print(f"{self.linked_list.run_payoff()} month(s) till payoff")
+        self.text2 = self.linked_list.construct_debt_payoff_output()
         self.switch_debt_output_window()
 
     def switch_debt_output_window(self):

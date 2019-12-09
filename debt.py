@@ -2,20 +2,19 @@
 
 
 class Node:
-
     def __init__(self, data):
         self.data = data
         self.next = None
 
 
 class Debt:
-
     def __init__(self, name, principal, interest, minimum):
+        self.interest_incurred = 0
+
         self.name = name
         self.principal = principal
         self.interest = interest
         self.minimum = minimum
-        self.interest_incurred = 0
 
 
 # Purpose modified linked list class definition
@@ -29,13 +28,14 @@ class LinkedList:
         self.minimums = 0   # Total minimum payment of all debts. Used to calculate if enough money for minimums.
         self.leftover = 0   # L = (Income - minimums)
         self.months_to_payoff = 0   # ++ once per full pass of linked list
+
         # Used to keep track of which debts have been paid during a given pass.
         # Needed to decide if interest needs recalculating
         self.interest_already_paid_list = []
+
         self.pay_off_priority_list = []  # Used to preserve payoff priority for final debt output string
         self.pay_off_month_dictionary = {}  # Used to capture pay off month of each debt for output string
 
-    # TODO: finish debt.py and gui.py comments
     # Prepare cursors for list traversal
     # Start from head
     def prime_cursors(self):
@@ -50,7 +50,7 @@ class LinkedList:
         return cur, prev
 
     @staticmethod
-    def insert(node, cur, prev):
+    def manual_insert(node, cur, prev):
         prev.next = node
         prev.next.next = cur
 
@@ -91,9 +91,10 @@ class LinkedList:
     # Sorts objects into the list based on interest rate
     # Keeps running tally of minimums
     # TODO: Decide what to do if == interest rate. Need uniform behavior for testing.
-    def fill_list(self, some_debt):
+    def auto_insert(self, some_debt):
         self.minimums += some_debt.minimum
         node = Node(some_debt)
+
         if self.head is None:
             self.head = node
         else:
@@ -105,7 +106,7 @@ class LinkedList:
                     self.insert_new_head(node)
                     break
                 else:
-                    LinkedList.insert(node, cur, prev)
+                    LinkedList.manual_insert(node, cur, prev)
                     break
 
             if cur is None:
@@ -155,7 +156,6 @@ class LinkedList:
             if self.head:
                 if self.head in self.interest_already_paid_list:
                     self.prepare_recalc(spillover)
-
                     if self.head.data.principal <= 0:
                         self.special_spill()
                     else:
@@ -170,11 +170,10 @@ class LinkedList:
     # Keeps tracks of number of passes(months)
     # Leverages the spill() functions to handle spillover of paid debts.
     # Returns number of months till all debts are paid based on available information.
-    def pay_shit(self):
+    def run_payoff(self):
         while self.head:
             cur, prev = self.prime_cursors()
             self.temp_leftover += self.leftover
-
             while cur:
                 if cur == self.head:
                     cur.data.principal -= (cur.data.minimum + self.temp_leftover)
@@ -215,7 +214,7 @@ class LinkedList:
             cur = cur.next
 
     # TODO: I'm not even commenting this until I clean it up.
-    def construct_debt_output(self):
+    def construct_debt_priority_output(self):
         text = "Priority\n"
         count = 1
         for debt in self.pay_off_priority_list:
@@ -225,7 +224,7 @@ class LinkedList:
         return text
 
     # TODO: Clean it up.
-    def construct_debt_output2(self):
+    def construct_debt_payoff_output(self):
 
         text = "Months to Payoff\n"
 
@@ -256,10 +255,10 @@ def run(income=None):
     # TODO: Find a better way to link the list.
     # TODO: Fix when user input
     # TODO: Unittest
-    linked_list.fill_list(d1)
-    linked_list.fill_list(d2)
-    linked_list.fill_list(d3)
-    linked_list.fill_list(d4)
+    linked_list.auto_insert(d1)
+    linked_list.auto_insert(d2)
+    linked_list.auto_insert(d3)
+    linked_list.auto_insert(d4)
 
     linked_list.print_list()
     # Logic that decides if there is enough money to cover mins.
@@ -275,10 +274,10 @@ def run(income=None):
         print("With ya broke ass.")
 
     linked_list.preserve_payoff_priority()
-    print(linked_list.construct_debt_output())
+    print(linked_list.construct_debt_priority_output())
     # Expecting pay_shit() to return an int value.
-    print(f"{linked_list.pay_shit()} month(s) till payoff")
-    print(linked_list.construct_debt_output2())
+    print(f"{linked_list.run_payoff()} month(s) till payoff")
+    print(linked_list.construct_debt_payoff_output())
 
 
 if __name__ == '__main__':
