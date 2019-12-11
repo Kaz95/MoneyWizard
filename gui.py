@@ -30,6 +30,9 @@ class SharedWindowAttributes:
     def not_alnum_messagebox(self):
         QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
+    def no_name_given_messagebox(self, missing_fields):
+        QtWidgets.QMessageBox.critical(self, "Missing Field(s)!", f"Missing {missing_fields} field(s)")
+
 
 class MenuWindow(QtWidgets.QMainWindow):
     payday_window_signal = QtCore.pyqtSignal()
@@ -42,7 +45,7 @@ class MenuWindow(QtWidgets.QMainWindow):
         self.debt_btn = None
         self.both_btn = None
 
-        loadUi("menu.ui", self)
+        loadUi("ui/menu.ui", self)
 
         # self.bills_btn = self.findChild(QtWidgets.QPushButton, "bills_btn")
         self.bills_btn.clicked.connect(self.switch_payday_window)
@@ -66,6 +69,7 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowAttributes):
         QtWidgets.QWidget.__init__(self)
         self.add_btn = None
         self.done_btn = None
+
         self.date_line_edit = None
         self.amt_line_edit = None
 
@@ -73,7 +77,7 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.p1 = None
         self.p2 = None
 
-        loadUi("payday.ui", self)
+        loadUi("ui/payday.ui", self)
 
         self.done_btn.clicked.connect(self.switch_bills_window)
         self.add_btn.clicked.connect(self.add_payday)
@@ -126,10 +130,9 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.date_line_edit = None
         self.name_line_edit = None
 
-        loadUi("bills.ui", self)
+        loadUi("ui/bills.ui", self)
 
         self.done_btn.clicked.connect(self.run_bills)
-        self.done_btn.clicked.connect(self.switch_bills_output_window)
 
         self.add_btn.clicked.connect(self.add_bill)
 
@@ -155,7 +158,8 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.date_line_edit.clear()
 
     def switch_debt_window(self):
-        left_over = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+        _, left_over = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+        left_over = left_over['leftover']
         left_over = str(left_over)
         self.debt_window_signal.emit(left_over)
 
@@ -164,10 +168,12 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
 
     def run_bills(self):
         if self.run_both is False:
-            self.output_text = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
-            self.close()
+            self.output_text, _ = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+            self.switch_bills_output_window()
         else:
             print("It wasn't false")
+            self.output_text, _ = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
+            self.switch_bills_output_window()
             self.switch_debt_window()
 
 
@@ -176,7 +182,7 @@ class BillsOutputWindow(QtWidgets.QDialog):
     def __init__(self, text):
         QtWidgets.QWidget.__init__(self)
         self.plainTextEdit = None
-        loadUi("bills_output.ui", self)
+        loadUi("ui/bills_output.ui", self)
         self.plainTextEdit.insertPlainText(text + "\n")
 
 
@@ -187,7 +193,7 @@ class IncomeWindow(QtWidgets.QDialog, SharedWindowAttributes):
         QtWidgets.QWidget.__init__(self)
         self.amt_line_edit = None
         self.done_btn = None
-        loadUi("income.ui", self)
+        loadUi("ui/income.ui", self)
 
         self.done_btn.clicked.connect(self.switch_debt_window)
 
@@ -207,12 +213,14 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.principal_line_edit = None
         self.interest_line_edit = None
         self.minimum_line_edit = None
+
         self.add_btn = None
         self.done_btn = None
-        self.text1 = None
-        self.text2 = None
 
-        loadUi("debt.ui", self)
+        self.debt_priority_output = None
+        self.debt_payoff_month_output = None
+
+        loadUi("ui/debt.ui", self)
         print(f"Income: {income}")
 
         self.linked_list = debt.LinkedList()
@@ -250,23 +258,23 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
 
     def run(self):
         self.linked_list.preserve_payoff_priority()
-        self.text1 = self.linked_list.construct_debt_priority_output()
+        self.debt_priority_output = self.linked_list.construct_debt_priority_output()
         print(f"{self.linked_list.run_payoff()} month(s) till payoff")
-        self.text2 = self.linked_list.construct_debt_payoff_output()
+        self.debt_payoff_month_output = self.linked_list.construct_debt_payoff_output()
         self.switch_debt_output_window()
 
     def switch_debt_output_window(self):
-        self.debt_output_signal.emit(self.text1, self.text2)
+        self.debt_output_signal.emit(self.debt_priority_output, self.debt_payoff_month_output)
 
 
 class DebtOutputWindow(QtWidgets.QDialog):
 
-    def __init__(self, text1, text2):
+    def __init__(self, debt_priority_output, debt_payoff_month_output):
         QtWidgets.QWidget.__init__(self)
-        loadUi("debt_output.ui", self)
+        loadUi("ui/debt_output.ui", self)
         # Leaving this widget unnamed and undiscovered to show it still works
-        self.plainTextEdit.insertPlainText(text1 + "\n")
-        self.plainTextEdit.insertPlainText(text2 + "\n")
+        self.plainTextEdit.insertPlainText(debt_priority_output + "\n")
+        self.plainTextEdit.insertPlainText(debt_payoff_month_output + "\n")
 
 
 class Controller:
@@ -304,8 +312,8 @@ class Controller:
         self.bills.bills_output_signal.connect(self.show_bills_output)
         self.bills.exec_()
 
-    def show_bills_output(self, text):
-        self.bills_output = BillsOutputWindow(text)
+    def show_bills_output(self, output_string):
+        self.bills_output = BillsOutputWindow(output_string)
         self.bills.close()
         self.bills_output.exec_()
 
@@ -324,8 +332,8 @@ class Controller:
 
         self.debt.exec_()
 
-    def show_debt_output(self, text1, text2):
-        self.debt_output = DebtOutputWindow(text1, text2)
+    def show_debt_output(self, debt_priority_output, debt_payoff_month_output):
+        self.debt_output = DebtOutputWindow(debt_priority_output, debt_payoff_month_output)
         self.debt.close()
         self.debt_output.exec_()
 

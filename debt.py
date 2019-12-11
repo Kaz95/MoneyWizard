@@ -1,20 +1,20 @@
 # Handles all debt related backend
 
 
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-
-
 class Debt:
     def __init__(self, name, principal, interest, minimum):
-        self.interest_incurred = 0
-
         self.name = name
         self.principal = principal
         self.interest = interest
         self.minimum = minimum
+
+        self.interest_incurred = 0
+
+
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
 
 
 # Purpose modified linked list class definition
@@ -22,11 +22,11 @@ class LinkedList:
 
     # TODO: Try to slim this down, or at least break into logical blocks. Look up a proper init
     def __init__(self):
-        self.temp_leftover = 0  # Used to hold leftover during actual iteration. Refilled at the start of each pass.
         self.head = None
-        self.income = 0     # The value that will eventually be passed from bills.py
-        self.minimums = 0   # Total minimum payment of all debts. Used to calculate if enough money for minimums.
+        self.income = 0  # The value that will eventually be passed from bills.py
+        self.minimums = 0  # Total minimum payment of all debts. Used to calculate if enough money for minimums.
         self.leftover = 0   # L = (Income - minimums)
+        self.temp_leftover = 0  # Used to hold leftover during actual iteration. Refilled at the start of each pass.
         self.months_to_payoff = 0   # ++ once per full pass of linked list
 
         # Used to keep track of which debts have been paid during a given pass.
@@ -49,43 +49,16 @@ class LinkedList:
         cur = cur.next
         return cur, prev
 
-    @staticmethod
-    def manual_insert(node, cur, prev):
-        prev.next = node
-        prev.next.next = cur
-
-    @staticmethod
-    def find_spillover(principal):
-        spillover = 0 - principal
-        return spillover
-
     # Insert new head node
     def insert_new_head(self, node):
         temp = self.head
         self.head = node
         self.head.next = temp
 
-    # Remove previously incurred interest in preparation for interest recalculation
-    # Used when payment spills over into new node
-    def prepare_recalc(self, spillover):
-        self.head.data.principal -= self.head.data.interest_incurred
-        self.head.data.principal -= spillover
-        print(self.head.data.name, round(self.head.data.principal, 2))
-
-    # Single function that calculates and incurs interest
-    # Generates interest on head node by default unless a node is passes as param
-    def generate_interest(self, cur=None):
-        if cur:
-            cur.data.interest_incurred = cur.data.principal * cur.data.interest
-            cur.data.principal += cur.data.interest_incurred
-        else:
-            self.head.data.interest_incurred = self.head.data.principal * self.head.data.interest
-            self.head.data.principal += self.head.data.interest_incurred
-            print(self.head.data.name, round(self.head.data.principal, 2))
-
-    # Used to increased leftover amount after a give cursor is paid off.
-    def add_to_leftover(self, cur):
-        self.leftover += cur.data.minimum
+    @staticmethod
+    def manual_insert(node, cur, prev):
+        prev.next = node
+        prev.next.next = cur
 
     # Fills linked list with debt object
     # Sorts objects into the list based on interest rate
@@ -114,6 +87,33 @@ class LinkedList:
                     prev.next = node
                 else:
                     self.insert_new_head(node)
+
+    @staticmethod
+    def find_spillover(principal):
+        spillover = 0 - principal
+        return spillover
+
+    # Remove previously incurred interest in preparation for interest recalculation
+    # Used when payment spills over into new node
+    def prepare_recalc(self, spillover):
+        self.head.data.principal -= self.head.data.interest_incurred
+        self.head.data.principal -= spillover
+        print(self.head.data.name, round(self.head.data.principal, 2))
+
+    # Single function that calculates and incurs interest
+    # Generates interest on head node by default unless a node is passes as param
+    def generate_interest(self, cur=None):
+        if cur:
+            cur.data.interest_incurred = cur.data.principal * cur.data.interest
+            cur.data.principal += cur.data.interest_incurred
+        else:
+            self.head.data.interest_incurred = self.head.data.principal * self.head.data.interest
+            self.head.data.principal += self.head.data.interest_incurred
+            print(self.head.data.name, round(self.head.data.principal, 2))
+
+    # Used to increased leftover amount after a give cursor is paid off.
+    def add_to_leftover(self, cur):
+        self.leftover += cur.data.minimum
 
     # Currently used to visually ensure list has been sorted correctly.
     def print_list(self):
@@ -275,7 +275,6 @@ def run(income=None):
 
     linked_list.preserve_payoff_priority()
     print(linked_list.construct_debt_priority_output())
-    # Expecting pay_shit() to return an int value.
     print(f"{linked_list.run_payoff()} month(s) till payoff")
     print(linked_list.construct_debt_payoff_output())
 
