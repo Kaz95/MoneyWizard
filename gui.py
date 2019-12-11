@@ -30,8 +30,19 @@ class SharedWindowAttributes:
     def not_alnum_messagebox(self):
         QtWidgets.QMessageBox.critical(self, "Isn't Alnum", "Isn't Alphanumeric")
 
-    def no_name_given_messagebox(self, missing_fields):
-        QtWidgets.QMessageBox.critical(self, "Missing Field(s)!", f"Missing {missing_fields} field(s)")
+    def input_blank_messagebox(self):
+        QtWidgets.QMessageBox.critical(self, "Blank input", "Blank inputs are not allowed!")
+
+    @staticmethod
+    def isblank(line_edit):
+        if not line_edit.strip():
+            return True
+
+    def check_for_blank_input(self, line_edit_list):
+        for line_edit in line_edit_list:
+            if self.isblank(line_edit):
+                return False
+        return True
 
 
 class MenuWindow(QtWidgets.QMainWindow):
@@ -94,15 +105,21 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowAttributes):
     def add_payday(self):
         amount = self.amt_line_edit.text()
         date = self.date_line_edit.text()
-        payday = bills.create_payday(amount, date)
-        if self.p1 is None:
-            self.p1 = payday
-        else:
-            self.p2 = payday
-            self.switch_bills_window()
 
-        self.amt_line_edit.clear()
-        self.date_line_edit.clear()
+        if self.check_for_blank_input([amount, date]):
+            payday = bills.create_payday(amount, date)
+            if self.p1 is None:
+                self.p1 = payday
+            else:
+                self.p2 = payday
+                self.switch_bills_window()
+
+            self.amt_line_edit.clear()
+            self.date_line_edit.clear()
+        else:
+            self.input_blank_messagebox()
+
+
 
 
 class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
