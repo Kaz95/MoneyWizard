@@ -56,7 +56,7 @@ class LinkedList:
         self.head.next = temp
 
     @staticmethod
-    def manual_insert(node, cur, prev):
+    def manual_insertion(node, cur, prev):
         prev.next = node
         prev.next.next = cur
 
@@ -79,7 +79,7 @@ class LinkedList:
                     self.insert_new_head(node)
                     break
                 else:
-                    LinkedList.manual_insert(node, cur, prev)
+                    LinkedList.manual_insertion(node, cur, prev)
                     break
 
             if cur is None:

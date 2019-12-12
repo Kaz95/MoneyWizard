@@ -57,7 +57,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="amt_line_edit"/>
+     <widget class="QLineEdit" name="amt_line_edit">
+      <property name="text">
+       <string>50</string>
+      </property>
+      <property name="placeholderText">
+       <string>Amount</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

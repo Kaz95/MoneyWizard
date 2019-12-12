@@ -31,7 +31,14 @@
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="principal_line_edit"/>
+     <widget class="QLineEdit" name="principal_line_edit">
+      <property name="text">
+       <string>40</string>
+      </property>
+      <property name="placeholderText">
+       <string>Principal</string>
+      </property>
+     </widget>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="principal_lbl">
@@ -48,10 +55,24 @@
      </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QLineEdit" name="interest_line_edit"/>
+     <widget class="QLineEdit" name="interest_line_edit">
+      <property name="text">
+       <string>.04</string>
+      </property>
+      <property name="placeholderText">
+       <string>Interest</string>
+      </property>
+     </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QLineEdit" name="minimum_line_edit"/>
+     <widget class="QLineEdit" name="minimum_line_edit">
+      <property name="text">
+       <string>10</string>
+      </property>
+      <property name="placeholderText">
+       <string>Minimum</string>
+      </property>
+     </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="name_lbl">
@@ -61,7 +82,14 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="name_line_edit"/>
+     <widget class="QLineEdit" name="name_line_edit">
+      <property name="text">
+       <string>credit card</string>
+      </property>
+      <property name="placeholderText">
+       <string>Name</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
