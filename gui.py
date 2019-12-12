@@ -38,11 +38,11 @@ class SharedWindowAttributes:
         if not line_edit.strip():
             return True
 
-    def check_for_blank_input(self, line_edit_list):
+    def blank_input(self, line_edit_list):
         for line_edit in line_edit_list:
             if self.isblank(line_edit):
-                return False
-        return True
+                return True
+        return False
 
 
 class MenuWindow(QtWidgets.QMainWindow):
@@ -106,7 +106,9 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowAttributes):
         amount = self.amt_line_edit.text()
         date = self.date_line_edit.text()
 
-        if self.check_for_blank_input([amount, date]):
+        if self.blank_input([amount, date]):
+            self.input_blank_messagebox()
+        else:
             payday = bills.create_payday(amount, date)
             if self.p1 is None:
                 self.p1 = payday
@@ -116,10 +118,6 @@ class PayDayWindow(QtWidgets.QDialog, SharedWindowAttributes):
 
             self.amt_line_edit.clear()
             self.date_line_edit.clear()
-        else:
-            self.input_blank_messagebox()
-
-
 
 
 class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
@@ -167,12 +165,15 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
         amount = self.amt_line_edit.text()
         date = self.date_line_edit.text()
 
-        bill = bills.create_bill(name, amount, date)
-        BillsWindow.bills_list.append(bill)
+        if self.blank_input([name, amount, date]):
+            self.input_blank_messagebox()
+        else:
+            bill = bills.create_bill(name, amount, date)
+            BillsWindow.bills_list.append(bill)
 
-        self.name_line_edit.clear()
-        self.amt_line_edit.clear()
-        self.date_line_edit.clear()
+            self.name_line_edit.clear()
+            self.amt_line_edit.clear()
+            self.date_line_edit.clear()
 
     def switch_debt_window(self):
         _, left_over = bills.run(BillsWindow.pay_day_list, BillsWindow.bills_list, self.p1, self.p2)
@@ -218,7 +219,10 @@ class IncomeWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.amt_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
     def switch_debt_window(self):
-        self.debt_window_signal.emit(self.amt_line_edit.text())
+        if self.blank_input([self.amt_line_edit.text()]):
+            self.input_blank_messagebox()
+        else:
+            self.debt_window_signal.emit(self.amt_line_edit.text())
 
 
 class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
@@ -261,17 +265,23 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
 
     def add_debt(self):
         name = self.name_line_edit.text()
-        principal = int(self.principal_line_edit.text())
-        interest = float(self.interest_line_edit.text())
-        minimum = int(self.minimum_line_edit.text())
+        principal = (self.principal_line_edit.text())
+        interest = (self.interest_line_edit.text())
+        minimum = (self.minimum_line_edit.text())
 
-        some_debt = debt.Debt(name, principal, interest, minimum)
-        self.linked_list.auto_insert(some_debt)
+        if self.blank_input([name, principal, interest, minimum]):
+            self.input_blank_messagebox()
+        else:
+            principal = int(principal)
+            interest = float(interest)
+            minimum = int(minimum)
+            some_debt = debt.Debt(name, principal, interest, minimum)
+            self.linked_list.auto_insert(some_debt)
 
-        self.name_line_edit.clear()
-        self.principal_line_edit.clear()
-        self.interest_line_edit.clear()
-        self.minimum_line_edit.clear()
+            self.name_line_edit.clear()
+            self.principal_line_edit.clear()
+            self.interest_line_edit.clear()
+            self.minimum_line_edit.clear()
 
     def run(self):
         self.linked_list.preserve_payoff_priority()
