@@ -20,13 +20,13 @@ class TestBills(unittest.TestCase):
         self.paydays = [self.p1, self.p2]
 
     def test_add_amounts(self):
-        answer1 = bills.add_amounts(self.bills)
-        answer2 = bills.add_amounts(self.paydays)
+        answer1 = bills.Bill.add_amounts(self.bills)
+        answer2 = bills.Bill.add_amounts(self.paydays)
         self.assertEqual(answer1, 1400)
         self.assertEqual(answer2, 1500)
 
     def test_seperate_bills(self):
-        a, b = bills.separate_bills(self.bills, range(5, 20))
+        a, b = bills.Bill.separate_bills(self.bills, range(5, 20))
         self.assertEqual(a, [self.b2])
         self.assertEqual(b, [self.b1, self.b3])
 

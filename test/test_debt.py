@@ -24,7 +24,7 @@ class TestDebt(unittest.TestCase):
 
     def test_move_cursors(self):
         cur = self.linked_list.head
-        cur, prev = debt.move_cursors(cur)
+        cur, prev = debt.LinkedList.move_cursors(cur)
         self.assertEqual(cur, self.linked_list.head.next, "cur pointer did not move correctly")
         self.assertEqual(prev, self.linked_list.head, "prev pointer did not move correctly")
 
@@ -33,14 +33,14 @@ class TestDebt(unittest.TestCase):
         cur = prev.next
 
         node = debt.Node(self.d5)
-        debt.insert(node, cur, prev)
+        debt.LinkedList.manual_insertion(node, cur, prev)
 
         self.assertEqual(prev.next, node, "Node not in correct position")
         self.assertEqual(node.next, cur, "Cur not in correct position")
 
     def test_find_spillover(self):
         principal = -100
-        spillover = debt.find_spillover(principal)
+        spillover = debt.LinkedList.find_spillover(principal)
         self.assertEqual(spillover, 100)
 
     def test_prime_cursors(self):
@@ -86,7 +86,6 @@ class TestDebt(unittest.TestCase):
 
         self.assertEqual(self.linked_list.head.data.name, "Something")
         self.assertEqual(self.linked_list.head.data.principal, 80)
-
 
 
 if __name__ == '__main__':
