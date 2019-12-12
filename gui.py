@@ -20,8 +20,8 @@ class SharedWindowAttributes:
         is_digit_regex = QtCore.QRegExp("[0-9]+")
         self.is_digit_validator = QtGui.QRegExpValidator(is_digit_regex)
 
-        is_alnum_regex = QtCore.QRegExp("[a-zA-Z0-9]+")
-        self.is_alnum_validator = QtGui.QRegExpValidator(is_alnum_regex)
+        is_alnum_or_space_regex = QtCore.QRegExp("[a-zA-Z0-9 ]+")
+        self.is_alnum_or_space_validator = QtGui.QRegExpValidator(is_alnum_or_space_regex)
 
     # These methods will sling errors due to the way im using multiple inheritance
     def not_numeric_messagebox(self):
@@ -131,15 +131,15 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
         QtWidgets.QWidget.__init__(self)
         self.p1 = p1
         self.p2 = p2
+        BillsWindow.pay_day_list.append(p1)
+        BillsWindow.pay_day_list.append(p2)
+
         self.run_both = run_both
 
         self.output_text = None
 
         self.done_btn = None
         self.add_btn = None
-
-        BillsWindow.pay_day_list.append(p1)
-        BillsWindow.pay_day_list.append(p2)
 
         self.amt_line_edit = None
         self.date_line_edit = None
@@ -157,7 +157,7 @@ class BillsWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.date_line_edit.setValidator(self.is_digit_validator)
         self.date_line_edit.inputRejected.connect(self.not_numeric_messagebox)
 
-        self.name_line_edit.setValidator(self.is_alnum_validator)
+        self.name_line_edit.setValidator(self.is_alnum_or_space_validator)
         self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
 
     def add_bill(self):
@@ -251,7 +251,7 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
 
         self.done_btn.clicked.connect(self.run)
 
-        self.name_line_edit.setValidator(self.is_alnum_validator)
+        self.name_line_edit.setValidator(self.is_alnum_or_space_validator)
         self.name_line_edit.inputRejected.connect(self.not_alnum_messagebox)
 
         self.principal_line_edit.setValidator(self.is_digit_validator)
