@@ -177,6 +177,10 @@ class LinkedList:
     # Leverages the spill() functions to handle spillover of paid debts.
     # Returns number of months till all debts are paid based on available information.
     def run_payoff(self):
+        print(f"Minimums: {self.minimums}")
+        if self.minimums > self.income:
+            return "You don't have enough to cover minimums, refinance."
+        self.leftover = self.income - self.minimums
         while self.head:
             cur, prev = self.prime_cursors()
             self.temp_leftover += self.leftover
@@ -211,8 +215,10 @@ class LinkedList:
 
             self.months_to_payoff += 1
 
+        if self.need_refinance is True:
+            return "Refinance, a debts interest is too high."
         print(self.pay_off_month_dictionary)
-        return self.months_to_payoff
+        return self.construct_debt_payoff_output()
 
     # Traverse list and append each node to a list
     def preserve_payoff_priority(self):
