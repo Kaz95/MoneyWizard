@@ -36,6 +36,8 @@ class LinkedList:
         self.pay_off_priority_list = []  # Used to preserve payoff priority for final debt output string
         self.pay_off_month_dictionary = {}  # Used to capture pay off month of each debt for output string
 
+        self.need_refinance = None
+
     # Prepare cursors for list traversal
     # Start from head
     def prime_cursors(self):
@@ -105,9 +107,13 @@ class LinkedList:
     def generate_interest(self, cur=None):
         if cur:
             cur.data.interest_incurred = cur.data.principal * cur.data.interest
+            if cur.data.interest_incurred > self.income:
+                return True
             cur.data.principal += cur.data.interest_incurred
         else:
             self.head.data.interest_incurred = self.head.data.principal * self.head.data.interest
+            if self.head.data.interest_incurred > self.income:
+                return True
             self.head.data.principal += self.head.data.interest_incurred
             print(self.head.data.name, round(self.head.data.principal, 2))
 
@@ -184,7 +190,7 @@ class LinkedList:
                         print(cur.data.name, f"paid off in {self.months_to_payoff + 1} months(s)")
                         self.pay_off_month_dictionary[cur.data.name] = self.months_to_payoff + 1
                     else:
-                        self.generate_interest(cur)
+                        self.need_refinance = self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid_list.append(cur)
                 else:
@@ -195,10 +201,12 @@ class LinkedList:
                         self.add_to_leftover(cur)
                         self.special_spill_not_head(cur, prev)
                     else:
-                        self.generate_interest(cur)
+                        self.need_refinance = self.generate_interest(cur)
                         print(cur.data.name, round(cur.data.principal, 2))
                         self.interest_already_paid_list.append(cur)
-
+                if self.need_refinance is True:
+                    self.head = None
+                    break
                 cur, prev = LinkedList.move_cursors(cur)
 
             self.months_to_payoff += 1

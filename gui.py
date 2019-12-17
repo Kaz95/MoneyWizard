@@ -287,7 +287,10 @@ class DebtWindow(QtWidgets.QDialog, SharedWindowAttributes):
         self.linked_list.preserve_payoff_priority()
         self.debt_priority_output = self.linked_list.construct_debt_priority_output()
         print(f"{self.linked_list.run_payoff()} month(s) till payoff")
-        self.debt_payoff_month_output = self.linked_list.construct_debt_payoff_output()
+        if self.linked_list.need_refinance is True:
+            self.debt_payoff_month_output = "Refinance"
+        else:
+            self.debt_payoff_month_output = self.linked_list.construct_debt_payoff_output()
         self.switch_debt_output_window()
 
     def switch_debt_output_window(self):
